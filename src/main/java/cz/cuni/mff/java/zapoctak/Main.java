@@ -4,7 +4,7 @@ import cz.cuni.mff.java.zapoctak.content.AddBook;
 import cz.cuni.mff.java.zapoctak.content.AddCustomer;
 import cz.cuni.mff.java.zapoctak.content.AddDocument;
 import cz.cuni.mff.java.zapoctak.content.AddAuthor;
-import cz.cuni.mff.java.zapoctak.content.BookDetail;
+import cz.cuni.mff.java.zapoctak.content.Books;
 import cz.cuni.mff.java.zapoctak.content.ReturnBook;
 
 import javax.swing.*;
@@ -22,15 +22,15 @@ public class Main {
         JButton bookButton = new JButton("Přidat knihu");
         JButton customerButton = new JButton("Přidat zákazníka");
         JButton documentButton = new JButton("Objednávka");
-        JButton bookDetailButton = new JButton("Knihy");
+        JButton booksButton = new JButton("Knihy");
         JButton returnBookButton = new JButton("Vrátit knihu");
 
         // Create the card panel to hold the different panels
         JPanel cardPanel = new JPanel(new CardLayout());
-        JPanel bookDetailPanel = new BookDetail();
-//        JPanel bookDetailPanel = new ReturnBook();
+        JPanel booksPanel = new Books();
+//        JPanel booksPanel = new ReturnBook();
 
-        cardPanel.add(bookDetailPanel, "bookDetail");
+        cardPanel.add(booksPanel, "books");
 
         // Add ActionListeners to each button to switch the displayed panel
         authorButton.addActionListener(e -> {
@@ -62,11 +62,11 @@ public class Main {
             cardLayout.show(cardPanel, "document");
         });
 
-        bookDetailButton.addActionListener(e -> {
-            JPanel bookDetailPanel2 = new BookDetail();
-            cardPanel.add(bookDetailPanel2, "bookDetail");
+        booksButton.addActionListener(e -> {
+            JPanel booksPanel2 = new Books();
+            cardPanel.add(booksPanel2, "books");
             CardLayout cardLayout = (CardLayout) cardPanel.getLayout();
-            cardLayout.show(cardPanel, "bookDetail");
+            cardLayout.show(cardPanel, "books");
         });
 
         returnBookButton.addActionListener(e -> {
@@ -77,7 +77,7 @@ public class Main {
         });
 
         // Add the buttons to the menu panel
-        menuPanel.add(bookDetailButton);
+        menuPanel.add(booksButton);
         menuPanel.add(authorButton);
         menuPanel.add(bookButton);
         menuPanel.add(customerButton);
