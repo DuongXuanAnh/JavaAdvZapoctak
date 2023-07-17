@@ -7,32 +7,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Config {
-    private static Connection connection = null;
-    private static final Logger logger = Logger.getLogger(Config.class.getName());
+    private static final String DATABASE_URL = "jdbc:mysql://localhost:3306/java_winter";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "";
+    private static final Logger LOGGER = Logger.getLogger(Config.class.getName());
 
-    static {
+    public static Connection getConnection() {
         try {
-            connection = createConnection();
-        } catch (SQLException | ClassNotFoundException ex) {
-            logger.log(Level.SEVERE, "Failed to initialize database connection", ex);
-            throw new ExceptionInInitializerError(ex);
+            return DriverManager.getConnection(DATABASE_URL, USERNAME, PASSWORD);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Cannot establish database connection", ex);
+            return null;
         }
-    }
-
-    public static synchronized Connection getConnection() {
-        if (connection == null) {
-            try {
-                connection = createConnection();
-            } catch (ClassNotFoundException | SQLException e) {
-                logger.log(Level.SEVERE, "Failed to create database connection", e);
-                throw new RuntimeException("Failed to create database connection", e);
-            }
-        }
-        return connection;
-    }
-
-    private static Connection createConnection() throws ClassNotFoundException, SQLException {
-        Class.forName("org.h2.Driver");
-        return DriverManager.getConnection("jdbc:h2:~/test", "sa", "");
     }
 }
