@@ -9,12 +9,10 @@ import cz.cuni.mff.java.zapoctak.content.ReturnBook;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.DriverManager;
 
 public class Main {
 
     public static void main(String[] args) {
-
         JFrame frame = new JFrame("Book Manager");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
