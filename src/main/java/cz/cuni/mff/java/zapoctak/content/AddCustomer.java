@@ -11,11 +11,19 @@ import java.awt.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+/**
+ * The AddCustomer class represents a JPanel that allows users to add a new customer.
+ * This includes fields to input the name and birthdate of the customer.
+ * It also includes checks for the validity of the input data.
+ */
 public class AddCustomer extends JPanel {
 
     private final JTextField nameField;
     private final JDateChooser dateChooser;
-
+    /**
+     * The constructor initializes the panel, including the layout, text fields, and submit button.
+     */
     public AddCustomer(){
         this.setBorder(TitleBorder.create("Přidat zákazníka"));
             nameField = new JTextField(20);
@@ -24,6 +32,9 @@ public class AddCustomer extends JPanel {
             setupSubmitButton();
         }
 
+    /**
+     * Configures the layout for the panel.
+     */
         private void setupLayout() {
                 setLayout(new GridBagLayout());
                 GridBagConstraints gbc = getGridBagConstraints();
@@ -32,6 +43,10 @@ public class AddCustomer extends JPanel {
                 addDateLabelAndChooser(gbc);
         }
 
+    /**
+     * Creates a GridBagConstraints object for the layout setup.
+     * @return GridBagConstraints object with specific configurations.
+     */
         private GridBagConstraints getGridBagConstraints() {
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.insets = new Insets(5, 5, 5, 5);
@@ -39,7 +54,10 @@ public class AddCustomer extends JPanel {
                 return gbc;
         }
 
-
+    /**
+     * Adds a JLabel and JTextField for the customer's name to the panel.
+     * @param gbc The GridBagConstraints for the layout setup.
+     */
         private void addNameLabelAndField(GridBagConstraints gbc) {
                 JLabel nameLabel = new JLabel("Jméno zákazníka");
                 gbc.gridx = 0;
@@ -50,6 +68,10 @@ public class AddCustomer extends JPanel {
                 add(nameField, gbc);
         }
 
+    /**
+     * Adds a JLabel and JDateChooser for the customer's birthdate to the panel.
+     * @param gbc The GridBagConstraints for the layout setup.
+     */
         private void addDateLabelAndChooser(GridBagConstraints gbc) {
                 JLabel dateLabel = new JLabel("Datum:");
                 dateChooser.setDateFormatString("dd.MM.yyyy");
@@ -61,6 +83,10 @@ public class AddCustomer extends JPanel {
                 add(dateChooser, gbc);
         }
 
+    /**
+     * Sets up the submit button with its action listener.
+     * When clicked, it takes the input data and, if valid, inserts a new customer into the database.
+     */
         private void setupSubmitButton() {
                 JButton submitButton = new JButton("Přidat zákazníka");
                 GridBagConstraints gbc = getGridBagConstraints();
@@ -79,6 +105,13 @@ public class AddCustomer extends JPanel {
                 });
         }
 
+    /**
+     * Checks the input data for validity.
+     * The customer name must not be empty, and the date must be a past date.
+     * @param customerName The input customer's name.
+     * @param selectedDate The selected date from the date chooser.
+     * @return True if data is valid, false otherwise.
+     */
         private boolean checkCustomerData(String customerName, Date selectedDate) {
             if(customerName.isEmpty()){
                 Notification.showErrorMessage("Jméno nesmí být prázdné");
@@ -97,6 +130,11 @@ public class AddCustomer extends JPanel {
             return true;
         }
 
+    /**
+     * Inserts a new customer into the database with the provided name and birthdate.
+     * @param customerName The customer's name.
+     * @param selectedDate The customer's birthdate.
+     */
         private void insertCustomerToDb(String customerName, Date selectedDate) {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
             String dateStr = format.format(selectedDate);
@@ -112,12 +150,22 @@ public class AddCustomer extends JPanel {
                     if (rs.next()) {
                         int generatedId = rs.getInt(1);
                         Notification.showSuccessMessage("Nový zákazník byl založen s ID: " + generatedId);
+                        resetForm();
                     } else {
                         Notification.showErrorMessage("Nastala chyba, prosím zkuste to znovu");
                     }
                 }
             } catch (SQLException ex) {
                 Notification.showErrorMessage("Chyba, zkuste to znovu nebo kontaktujte IT oddělení");
+                System.out.println(ex);
             }
         }
+
+    /**
+     * This method resets the form.
+     */
+    private void resetForm() {
+        nameField.setText("");
+        dateChooser.setDate(null);
+    }
 }
