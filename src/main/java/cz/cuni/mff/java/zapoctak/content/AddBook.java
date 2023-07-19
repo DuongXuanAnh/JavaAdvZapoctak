@@ -1,16 +1,13 @@
 package cz.cuni.mff.java.zapoctak.content;
 
-import com.toedter.calendar.JDateChooser;
 import cz.cuni.mff.java.zapoctak.config.Config;
+import cz.cuni.mff.java.zapoctak.global.Notification;
 import cz.cuni.mff.java.zapoctak.global.TitleBorder;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -194,7 +191,7 @@ public class AddBook extends JPanel {
         add(submitButton, gbc);
 
         submitButton.addActionListener(e -> {
-            System.out.println("Submited");
+            submitBook();
         });
     }
     private NumberFormatter createNumberFormatter() {
@@ -240,5 +237,84 @@ public class AddBook extends JPanel {
             comboBox.addItem(author);
         }
     }
+
+    private void submitBook() {
+        String bookName = nameField.getText();
+        Double bookPrice = (Double) priceField.getValue();
+        Integer bookYear = (Integer) yearField.getValue();
+        Integer bookQuantity = (Integer) quantitySpinner.getValue();
+        String bookDescription = descriptionArea.getText();
+        String bookGenre = (String) genresComboBox.getSelectedItem();
+
+        // Pro každý ComboBox v authorComboBoxes získáme vybranou položku
+        ArrayList<String> bookAuthors = new ArrayList<>();
+        for (JComboBox<String> authorComboBox : authorComboBoxes) {
+            bookAuthors.add((String) authorComboBox.getSelectedItem());
+        }
+
+        // Předpokládáme, že máte metodu pro vložení knihy do databáze, která přijímá tyto parametry
+        insertBookIntoDB(bookName, bookAuthors, bookGenre, bookPrice, bookYear, bookQuantity, bookDescription);
+    }
+
+    private void insertBookIntoDB(String name, ArrayList<String> authorNames, String genre, double price, int year, int quantity, String description) {
+        try (Connection conn = Config.getConnection();
+             PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO `kniha`(nazev, rok_vydani, cena, zanr, amount, popis) VALUES (?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)) {
+
+            insertStatement.setString(1, name);
+            insertStatement.setInt(2, year);
+            insertStatement.setDouble(3, price);
+            insertStatement.setString(4, genre);
+            insertStatement.setInt(5, quantity);
+            insertStatement.setString(6, description);
+
+            int rowsInserted = insertStatement.executeUpdate();
+
+            if (rowsInserted > 0) {
+                // získání ID nové knihy
+                ResultSet generatedKeys = insertStatement.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int bookId = generatedKeys.getInt(1);
+
+                    // vložení odpovídajících záznamů do tabulky kniha_autor
+                    for (String authorName : authorNames) {
+                        insertBookAuthorRecord(conn, bookId, authorName);
+                    }
+                }
+                Notification.showSuccessMessage("Kniha \"" + name + "\" byla úspěšně přidána");
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error inserting book: " + ex.getMessage());
+            Notification.showErrorMessage("Chyba, zkuste to znovu nebo kontaktujte IT oddělení");
+        }
+    }
+
+    private void insertBookAuthorRecord(Connection conn, int bookId, String authorName) throws SQLException {
+        try (PreparedStatement authorIdStatement = conn.prepareStatement("SELECT id FROM `autor` WHERE jmeno = ?")) {
+            authorIdStatement.setString(1, authorName);
+            ResultSet authorIdResult = authorIdStatement.executeQuery();
+            if (authorIdResult.next()) {
+                int authorId = authorIdResult.getInt("id");
+
+                try (PreparedStatement bookAuthorInsertStatement = conn.prepareStatement("INSERT INTO kniha_autor(id_kniha, id_autor) VALUES (?,?)")) {
+                    bookAuthorInsertStatement.setInt(1, bookId);
+                    bookAuthorInsertStatement.setInt(2, authorId);
+                    int bookAuthorRowsInserted = bookAuthorInsertStatement.executeUpdate();
+                    if (bookAuthorRowsInserted > 0) {
+                        System.out.println("New book_author record inserted successfully!");
+                    }
+                } catch (SQLException ex) {
+                    System.out.println("Error inserting book_author record: " + ex.getMessage());
+                    Notification.showErrorMessage("Chyba, zkuste to znovu nebo kontaktujte IT oddělení");
+                }
+            } else {
+                System.out.println("Author not found: " + authorName);
+                Notification.showErrorMessage(authorName + "Nebyl nalezen");
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error getting author ID: " + ex.getMessage());
+            Notification.showErrorMessage("Chyba, zkuste to znovu nebo kontaktujte IT oddělení");
+        }
+    }
+
 
 }
