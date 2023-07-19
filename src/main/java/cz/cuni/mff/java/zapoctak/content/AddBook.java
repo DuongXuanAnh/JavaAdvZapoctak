@@ -11,6 +11,8 @@ import java.sql.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AddBook extends JPanel {
 
@@ -252,11 +254,22 @@ public class AddBook extends JPanel {
             bookAuthors.add((String) authorComboBox.getSelectedItem());
         }
 
+        if (bookName.isEmpty() || bookGenre.isEmpty() || bookDescription.isEmpty() || bookAuthors.isEmpty() || bookPrice == null || bookYear == null || bookQuantity == null) {
+            Notification.showErrorMessage("Všechna pole musí být vyplněna");
+            return;
+        }
+
+        if (hasDuplicateAuthors(authorComboBoxes)) {
+            Notification.showErrorMessage("Autoři nesmí být stejní");
+            return;
+        }
+
         // Předpokládáme, že máte metodu pro vložení knihy do databáze, která přijímá tyto parametry
         insertBookIntoDB(bookName, bookAuthors, bookGenre, bookPrice, bookYear, bookQuantity, bookDescription);
     }
 
     private void insertBookIntoDB(String name, ArrayList<String> authorNames, String genre, double price, int year, int quantity, String description) {
+
         try (Connection conn = Config.getConnection();
              PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO `kniha`(nazev, rok_vydani, cena, zanr, amount, popis) VALUES (?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)) {
 
@@ -314,6 +327,21 @@ public class AddBook extends JPanel {
             System.out.println("Error getting author ID: " + ex.getMessage());
             Notification.showErrorMessage("Chyba, zkuste to znovu nebo kontaktujte IT oddělení");
         }
+    }
+
+    private boolean hasDuplicateAuthors(ArrayList<JComboBox<String>> authorComboBoxes) {
+        Set<String> authorNames = new HashSet<>();
+
+        for (JComboBox<String> comboBox : authorComboBoxes) {
+            String selectedAuthor = (String) comboBox.getSelectedItem();
+            if (selectedAuthor == null || selectedAuthor.isEmpty()) {
+                continue;
+            }
+            if (!authorNames.add(selectedAuthor)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
