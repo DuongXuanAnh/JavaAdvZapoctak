@@ -1,11 +1,16 @@
 package cz.cuni.mff.java.zapoctak.content;
 
 import com.toedter.calendar.JDateChooser;
+import cz.cuni.mff.java.zapoctak.config.Config;
 import cz.cuni.mff.java.zapoctak.global.TitleBorder;
 
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +33,7 @@ public class AddBook extends JPanel {
 
         nameField = new JTextField(20);
         authorComboBox = new JComboBox<>();
+        fillComboBoxWithAuthors(authorComboBox);
         authorComboBoxes = new ArrayList<>();
         genresComboBox = new JComboBox<>();
         priceField = new JFormattedTextField(createNumberFormatter());
@@ -97,6 +103,7 @@ public class AddBook extends JPanel {
     private void addNewAuthorField(GridBagConstraints gbc) {
 
         JComboBox<String> newAuthorComboBox = new JComboBox<>();
+        fillComboBoxWithAuthors(newAuthorComboBox);
         authorComboBoxes.add(newAuthorComboBox);
 
         gbc.gridx = 1;
@@ -210,6 +217,28 @@ public class AddBook extends JPanel {
         formatter.setAllowsInvalid(false);
         formatter.setCommitsOnValidEdit(true);
         return formatter;
+    }
+
+    private ArrayList<String> loadAuthorsFromDB() {
+        ArrayList<String> authors = new ArrayList<>();
+        try (Connection conn = Config.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT id, jmeno FROM autor")) {
+
+            while (rs.next()) {
+                authors.add(rs.getString("jmeno"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return authors;
+    }
+
+    private void fillComboBoxWithAuthors(JComboBox<String> comboBox) {
+        ArrayList<String> authors = loadAuthorsFromDB();
+        for (String author : authors) {
+            comboBox.addItem(author);
+        }
     }
 
 }
