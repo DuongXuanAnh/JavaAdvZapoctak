@@ -14,6 +14,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This class represents a panel for adding a new book.
+ *
+ * @author Duong Xuan Anh
+ * @version 1.0
+ */
+
 public class AddBook extends JPanel {
 
     private final JTextField nameField;
@@ -25,7 +32,6 @@ public class AddBook extends JPanel {
     private final JFormattedTextField yearField;
     private final JSpinner quantitySpinner;
     private final JTextArea descriptionArea;
-//    private final JButton addAuthorButton;
 
     public AddBook(){
         this.setBorder(TitleBorder.create("Přidat knihu"));
@@ -44,6 +50,9 @@ public class AddBook extends JPanel {
         setupSubmitButton();
     }
 
+    /**
+     Sets up the layout of the panel using GridBagLayout.
+     */
     private void setupLayout() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = getGridBagConstraints();
@@ -51,7 +60,6 @@ public class AddBook extends JPanel {
         addNameLabelAndField(gbc);
         addAuthorLabelAndComboBox(gbc);
         addAuthorButton(gbc);
-
         addGenresLabelAndComboBox(gbc);
         addPriceLabelAndField(gbc);
         addYearLabelAndField(gbc);
@@ -59,7 +67,10 @@ public class AddBook extends JPanel {
         addDescriptionLabelAndTextArea(gbc);
     }
 
-
+    /**
+     Retrieves a new instance of GridBagConstraints with default settings.
+     @return GridBagConstraints instance with default settings
+     */
     private GridBagConstraints getGridBagConstraints() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -67,6 +78,10 @@ public class AddBook extends JPanel {
         return gbc;
     }
 
+    /**
+     Adds the name label and text field to the panel.
+     @param gbc GridBagConstraints for layout positioning
+     */
     private void addNameLabelAndField(GridBagConstraints gbc) {
         JLabel nameLabel = new JLabel("Název");
         gbc.gridx = 0;
@@ -77,6 +92,10 @@ public class AddBook extends JPanel {
         add(nameField, gbc);
     }
 
+    /**
+     Adds the author label and combo box to the panel.
+     @param gbc GridBagConstraints for layout positioning
+     */
     private void addAuthorLabelAndComboBox(GridBagConstraints gbc) {
         JLabel nameLabel = new JLabel("Autor");
         gbc.gridx = 0;
@@ -88,6 +107,10 @@ public class AddBook extends JPanel {
         add(authorComboBox, gbc);
     }
 
+    /**
+     Adds the button for adding a new author to the panel.
+     @param gbc GridBagConstraints for layout positioning
+     */
     private void addAuthorButton(GridBagConstraints gbc){
         JButton addAuthorButton = new JButton("Přidat autora");
         gbc.gridx = 2;
@@ -99,6 +122,10 @@ public class AddBook extends JPanel {
         });
     }
 
+    /**
+     Adds a new author combo box to the panel.
+     @param gbc GridBagConstraints for layout positioning
+     */
     private void addNewAuthorField(GridBagConstraints gbc) {
 
         JComboBox<String> newAuthorComboBox = new JComboBox<>();
@@ -121,6 +148,11 @@ public class AddBook extends JPanel {
         repaint();
     }
 
+    /**
+     Removes an author combo box from the panel.
+     @param comboBoxToRemove the combo box to remove
+     @param buttonToRemove the button associated with the combo box
+     */
     private void removeAuthorComboBox(JComboBox<String> comboBoxToRemove, JButton buttonToRemove) {
         remove(comboBoxToRemove);
         remove(buttonToRemove);
@@ -129,6 +161,10 @@ public class AddBook extends JPanel {
         repaint();
     }
 
+    /**
+     Adds the genres label and combo box to the panel.
+     @param gbc GridBagConstraints for layout positioning
+     */
     private void addGenresLabelAndComboBox(GridBagConstraints gbc) {
         JLabel nameLabel = new JLabel("Žánr");
         gbc.gridx = 0;
@@ -143,6 +179,10 @@ public class AddBook extends JPanel {
         add(genresComboBox, gbc);
     }
 
+    /**
+     Adds the price label and text field to the panel.
+     @param gbc GridBagConstraints for layout positioning
+     */
     private void addPriceLabelAndField(GridBagConstraints gbc) {
         JLabel priceLabel = new JLabel("Cena (Kč)");
         gbc.gridx = 0;
@@ -153,7 +193,10 @@ public class AddBook extends JPanel {
         add(priceField, gbc);
     }
 
-
+    /**
+     Adds the year label and text field to the panel.
+     @param gbc GridBagConstraints for layout positioning
+     */
     private void addYearLabelAndField(GridBagConstraints gbc){
         JLabel yearLabel = new JLabel("Rok vydání");
         gbc.gridx = 0;
@@ -164,6 +207,10 @@ public class AddBook extends JPanel {
         add(yearField, gbc);
     }
 
+    /**
+     Adds the quantity label and spinner to the panel.
+     @param gbc GridBagConstraints for layout positioning
+     */
     private void addQuantityLabelAndSpinner(GridBagConstraints gbc) {
         JLabel quantityLabel = new JLabel("Počet kusů");
         gbc.gridx = 0;
@@ -174,6 +221,10 @@ public class AddBook extends JPanel {
         add(quantitySpinner, gbc);
     }
 
+    /**
+     Adds the description label and text area to the panel.
+     @param gbc GridBagConstraints for layout positioning
+     */
     private void addDescriptionLabelAndTextArea(GridBagConstraints gbc) {
         JLabel descriptionLabel = new JLabel("Popis:");
         gbc.gridx = 0;
@@ -183,6 +234,9 @@ public class AddBook extends JPanel {
         add(descriptionArea, gbc);
     }
 
+    /**
+     Sets up the submit button and adds it to the panel.
+     */
     private void setupSubmitButton() {
         JButton submitButton = new JButton("Přidat knihu");
         GridBagConstraints gbc = getGridBagConstraints();
@@ -196,6 +250,11 @@ public class AddBook extends JPanel {
             submitBook();
         });
     }
+
+    /**
+     Creates and returns a NumberFormatter for formatting the price field.
+     @return NumberFormatter for formatting the price field
+     */
     private NumberFormatter createNumberFormatter() {
         NumberFormat format = NumberFormat.getNumberInstance();
         NumberFormatter formatter = new NumberFormatter(format);
@@ -207,6 +266,10 @@ public class AddBook extends JPanel {
         return formatter;
     }
 
+    /**
+     Creates and returns a NumberFormatter for formatting the year field.
+     @return NumberFormatter for formatting the year field
+     */
     private NumberFormatter createIntFormatter() {
         NumberFormat format = NumberFormat.getIntegerInstance();
         NumberFormatter formatter = new NumberFormatter(format);
@@ -218,6 +281,10 @@ public class AddBook extends JPanel {
         return formatter;
     }
 
+    /**
+     Loads the authors from the database and returns them as an ArrayList of Strings.
+     @return ArrayList of authors loaded from the database
+     */
     private ArrayList<String> loadAuthorsFromDB() {
         ArrayList<String> authors = new ArrayList<>();
         try (Connection conn = Config.getConnection();
@@ -233,6 +300,10 @@ public class AddBook extends JPanel {
         return authors;
     }
 
+    /**
+     Fills the provided combo box with authors loaded from the database.
+     @param comboBox combo box to fill with authors
+     */
     private void fillComboBoxWithAuthors(JComboBox<String> comboBox) {
         ArrayList<String> authors = loadAuthorsFromDB();
         for (String author : authors) {
@@ -240,6 +311,9 @@ public class AddBook extends JPanel {
         }
     }
 
+    /**
+     Submits the book by retrieving the entered information and inserting it into the database.
+     */
     private void submitBook() {
         String bookName = nameField.getText();
         Double bookPrice = (Double) priceField.getValue();
@@ -267,7 +341,16 @@ public class AddBook extends JPanel {
         // Předpokládáme, že máte metodu pro vložení knihy do databáze, která přijímá tyto parametry
         insertBookIntoDB(bookName, bookAuthors, bookGenre, bookPrice, bookYear, bookQuantity, bookDescription);
     }
-
+    /**
+     Inserts the book information into the database.
+     @param name book name
+     @param authorNames list of author names
+     @param genre book genre
+     @param price book price
+     @param year book publication year
+     @param quantity book quantity
+     @param description book description
+     */
     private void insertBookIntoDB(String name, ArrayList<String> authorNames, String genre, double price, int year, int quantity, String description) {
 
         try (Connection conn = Config.getConnection();
@@ -301,6 +384,13 @@ public class AddBook extends JPanel {
         }
     }
 
+    /**
+     Inserts a book-author record into the database.
+     @param conn database connection
+     @param bookId ID of the book
+     @param authorName name of the author
+     @throws SQLException if a database access error occurs
+     */
     private void insertBookAuthorRecord(Connection conn, int bookId, String authorName) throws SQLException {
         try (PreparedStatement authorIdStatement = conn.prepareStatement("SELECT id FROM `autor` WHERE jmeno = ?")) {
             authorIdStatement.setString(1, authorName);
@@ -329,6 +419,11 @@ public class AddBook extends JPanel {
         }
     }
 
+    /**
+     Checks if there are duplicate authors selected in the author combo boxes.
+     @param authorComboBoxes list of author combo boxes
+     @return {@code true} if there are duplicate authors, {@code false} otherwise
+     */
     private boolean hasDuplicateAuthors(ArrayList<JComboBox<String>> authorComboBoxes) {
         Set<String> authorNames = new HashSet<>();
 
