@@ -13,52 +13,81 @@ import java.sql.Connection;
 
 public class Books extends JPanel {
 
+    private final JTextField titleField;
+    private final JComboBox<String> authorComboBox;
+
+    private final JTable bookTable;
+
     public Books(){
         this.setBorder(TitleBorder.create("Knihy"));
 
-        Connection conn = Config.getConnection();
+        titleField = new JTextField(30);
+        authorComboBox = new JComboBox<>();
+        bookTable = createTable();
 
-        if (conn == null) {
-            Notification.showErrorMessage("Cannot establish database connection");
-            return;
-        }
+        setupLayout();
 
-        // Nastavíme BoxLayout
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    }
 
-        // Vytvoříme a přidáme label a combobox na stejný panel
-        JPanel comboBoxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel comboBoxLabel = new JLabel("Combobox:");
-        String[] comboBoxItems = {"Item 1", "Item 2", "Item 3"};
-        JComboBox<String> comboBox = new JComboBox<>(comboBoxItems);
-        comboBoxPanel.add(comboBoxLabel);
-        comboBoxPanel.add(comboBox);
-        this.add(comboBoxPanel);
+    private void setupLayout() {
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = getGridBagConstraints();
 
-        // Vytvoříme a přidáme label a textbox na stejný panel
-        JPanel textBoxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel textBoxLabel = new JLabel("Textbox:");
-        JTextField textBox = new JTextField(10);  // 10 sloupců
-        textBoxPanel.add(textBoxLabel);
-        textBoxPanel.add(textBox);
-        this.add(textBoxPanel);
+        addTitleLabelAndField(gbc);
+        addNameLabelAndField(gbc);
+        addTable(gbc);
+    }
 
-        // Vytvoříme a přidáme tabulku se 4 sloupci
-        String[] columnNames = {"Column 1", "Column 2", "Column 3", "Column 4"};
-        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-        JTable table = new JTable(model);
-        JScrollPane scrollPane = new JScrollPane(table);
-        this.add(scrollPane);
+    private GridBagConstraints getGridBagConstraints() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        return gbc;
+    }
 
-        // Vytvoříme a přidáme tlačítko "Přidat do košíku"
-        JButton button = new JButton("Přidat do košíku");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Tady můžete přidat kód, který se spustí po stisknutí tlačítka
-                System.out.println("Button clicked");
-            }
+    private void addTitleLabelAndField(GridBagConstraints gbc) {
+        JLabel authorLabel = new JLabel("Název knihy: ");
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(authorLabel, gbc);
+
+        gbc.gridx = 1;
+        add(titleField, gbc);
+    }
+    private void addNameLabelAndField(GridBagConstraints gbc) {
+        JLabel authorLabel = new JLabel("Autor: ");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(authorLabel, gbc);
+
+        gbc.gridx = 1;
+        add(authorComboBox, gbc);
+    }
+
+    private JTable createTable() {
+        String[] columnNames = {"ID", "Název", "Počet kusů", "Cena"};
+        String dataValues[][] = {
+                {"Value 1", "Value 2", "Value 3", "Value 4"},
+                {"Value 5", "Value 6", "Value 7", "Value 8"},
+        };
+
+        JTable table = new JTable(dataValues, columnNames);
+        table.getSelectionModel().addListSelectionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            System.out.println("Selected row: " + selectedRow);
+            // add more actions here
         });
-        this.add(button);
+
+        return table;
+    }
+
+    private void addTable(GridBagConstraints gbc) {
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.weightx = 1.0; // add this
+
+        JScrollPane scrollPane = new JScrollPane(bookTable);
+        add(scrollPane, gbc);
     }
 }
