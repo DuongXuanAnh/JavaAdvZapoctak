@@ -84,10 +84,19 @@ public class Books extends JPanel {
         String[] columnNames = {"ID", "Název", "Počet kusů", "Cena"};
         tableModel.setColumnIdentifiers(columnNames);
         JTable table = new JTable(tableModel);
+        table.setDefaultEditor(Object.class, null);
 
         table.getSelectionModel().addListSelectionListener(e -> {
-            int selectedRow = table.getSelectedRow();
-            System.out.println("Selected row: " + selectedRow);
+            if (!e.getValueIsAdjusting()) { // Ensure we only handle the final event, not intermediate ones
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) { // Check if any row is selected
+                    Object idObject = table.getValueAt(selectedRow, 0);
+                    if (idObject != null) {
+                        int bookId = (int) idObject;
+                        System.out.println("Selected book ID: " + bookId);
+                    }
+                }
+            }
         });
 
         return table;
