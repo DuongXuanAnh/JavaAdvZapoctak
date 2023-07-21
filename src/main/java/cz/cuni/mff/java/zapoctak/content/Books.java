@@ -2,7 +2,6 @@ package cz.cuni.mff.java.zapoctak.content;
 
 import cz.cuni.mff.java.zapoctak.config.Config;
 import cz.cuni.mff.java.zapoctak.global.Author;
-import cz.cuni.mff.java.zapoctak.global.Notification;
 import cz.cuni.mff.java.zapoctak.global.TitleBorder;
 
 import javax.swing.*;
@@ -10,33 +9,35 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class Books extends JPanel {
 
     private final JTextField titleField;
     private final JComboBox<Author> authorComboBox;
+    private final DefaultTableModel tableModel;
 
     private final JTable bookTable;
+    private final Author noneAuthor = new Author(-1, "");
 
     public Books(){
         this.setBorder(TitleBorder.create("Knihy"));
 
         titleField = new JTextField(30);
+
         authorComboBox = new JComboBox<>();
+        authorComboBox.addItem(noneAuthor);
         fillComboBoxWithAuthors(authorComboBox);
+
+        tableModel = new DefaultTableModel();
         bookTable = createTable();
 
         setupLayout();
         setupListeners();
+        updateTableModel();
     }
 
     private void setupLayout() {
@@ -81,19 +82,52 @@ public class Books extends JPanel {
 
     private JTable createTable() {
         String[] columnNames = {"ID", "Název", "Počet kusů", "Cena"};
-        String dataValues[][] = {
-                {"Value 1", "Value 2", "Value 3", "Value 4"},
-                {"Value 5", "Value 6", "Value 7", "Value 8"},
-        };
+        tableModel.setColumnIdentifiers(columnNames);
+        JTable table = new JTable(tableModel);
 
-        JTable table = new JTable(dataValues, columnNames);
         table.getSelectionModel().addListSelectionListener(e -> {
             int selectedRow = table.getSelectedRow();
             System.out.println("Selected row: " + selectedRow);
-            // add more actions here
         });
 
         return table;
+    }
+
+    private void updateTableModel() {
+        String titleQuery = titleField.getText().trim();
+        Author selectedAuthor = (Author) authorComboBox.getSelectedItem();
+
+        String sql;
+        if (selectedAuthor == noneAuthor) {
+            sql = "SELECT id, nazev, amount, cena FROM kniha WHERE nazev LIKE ?";
+        } else {
+            sql = "SELECT id, nazev, amount, cena FROM kniha_autor_view WHERE nazev LIKE ? AND autor_id = ?";
+        }
+
+        try (Connection conn = Config.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, "%" + titleQuery + "%");
+
+            if (selectedAuthor != noneAuthor) {
+                stmt.setInt(2, selectedAuthor.getId());
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                tableModel.setRowCount(0); // Clear existing data
+
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String title = rs.getString("nazev");
+                    int amount = rs.getInt("amount");
+                    double cena = rs.getDouble("cena");
+
+                    tableModel.addRow(new Object[]{id, title, amount, cena});
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void addTable(GridBagConstraints gbc) {
@@ -132,6 +166,7 @@ public class Books extends JPanel {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     Author selectedAuthor = (Author) authorComboBox.getSelectedItem();
                     System.out.println("authorComboBox changed: " + selectedAuthor.getId());
+                    updateTableModel();
                 }
             }
         });
@@ -139,6 +174,7 @@ public class Books extends JPanel {
 
     private void printTitleFieldChange() {
         System.out.println("titleField changed: " + titleField.getText());
+        updateTableModel();
     }
 
     private void fillComboBoxWithAuthors(JComboBox<Author> comboBox) {
