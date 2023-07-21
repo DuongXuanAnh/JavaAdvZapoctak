@@ -1,5 +1,7 @@
 package cz.cuni.mff.java.zapoctak.config;
 
+import cz.cuni.mff.java.zapoctak.global.Notification;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -17,6 +19,8 @@ public class Config {
             return DriverManager.getConnection(DATABASE_URL, USERNAME, PASSWORD);
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Cannot establish database connection", ex);
+            Notification.showErrorMessage("Cannot establish database connection");
+            System.exit(0);
             return null;
         }
     }

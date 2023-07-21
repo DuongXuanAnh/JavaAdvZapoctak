@@ -141,10 +141,6 @@ public class Books extends JPanel {
         System.out.println("titleField changed: " + titleField.getText());
     }
 
-    private void printComboBoxChange() {
-        System.out.println("authorComboBox changed: " + authorComboBox.getSelectedItem());
-    }
-
     private void fillComboBoxWithAuthors(JComboBox<Author> comboBox) {
         ArrayList<Author> authors = loadAuthorsFromDB();
         for (Author author : authors) {
