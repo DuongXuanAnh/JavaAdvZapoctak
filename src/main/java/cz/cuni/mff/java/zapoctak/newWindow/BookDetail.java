@@ -1,6 +1,7 @@
 package cz.cuni.mff.java.zapoctak.newWindow;
 
 import cz.cuni.mff.java.zapoctak.config.Config;
+import cz.cuni.mff.java.zapoctak.content.Books;
 import cz.cuni.mff.java.zapoctak.global.Notification;
 
 import javax.swing.*;
@@ -25,8 +26,9 @@ public class BookDetail extends JPanel {
     private JComboBox<String> authorComboBox;
 
     private final int bookId;
+    private Books book;
 
-    public BookDetail(int bookId) {
+    public BookDetail(int bookId, Books book) {
         this.bookId = bookId;
         titleTextField = new JTextField(50);
         genresComboBox = new JComboBox<>();
@@ -37,6 +39,8 @@ public class BookDetail extends JPanel {
         authorComboBox = new JComboBox<>();
         fillComboBoxWithAuthors(authorComboBox);
         authorComboBoxes = new ArrayList<>();
+
+        this.book = book;
 
         setupLayout();
         loadDataFromDatabase(bookId);
@@ -344,6 +348,9 @@ public class BookDetail extends JPanel {
                 updateAuthorsForBook(bookId, authorNames);
                 System.out.println("Book updated successfully!");
                 Notification.showSuccessMessage("Kniha byla upravena");
+                book.updateTableModel();
+
+
             } else {
                 System.out.println("Failed to update the book!");
                 Notification.showSuccessMessage("Nastala chyba, zkuste to znovu!");

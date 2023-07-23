@@ -106,7 +106,7 @@ public class Books extends JPanel {
         return table;
     }
 
-    private void updateTableModel() {
+    public void updateTableModel() {
         String titleQuery = titleField.getText().trim();
         Author selectedAuthor = (Author) authorComboBox.getSelectedItem();
 
@@ -141,6 +141,8 @@ public class Books extends JPanel {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+        revalidate();
+        repaint();
     }
 
     private void addTable(GridBagConstraints gbc) {
@@ -236,7 +238,7 @@ public class Books extends JPanel {
 
     private void openDifferentPanel(int bookId) {
         // Create an instance of the BookDetail class
-        BookDetail bookDetail = new BookDetail(bookId);
+        BookDetail bookDetail = new BookDetail(bookId, this);
 
         // Create a new JFrame to display the BookDetail content
         JFrame bookDetailFrame = new JFrame("Book Details");
