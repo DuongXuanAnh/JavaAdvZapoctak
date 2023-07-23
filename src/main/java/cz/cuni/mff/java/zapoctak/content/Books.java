@@ -15,8 +15,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Books extends JPanel {
 
@@ -169,19 +171,54 @@ public class Books extends JPanel {
         add(submitButton, gbc);
 
         submitButton.addActionListener(e -> {
-            int selectedRow = bookTable.getSelectedRow();
-            if (selectedRow != -1) {
-                Object idObject = bookTable.getValueAt(selectedRow, 0);
-                if (idObject != null) {
-                    int bookId = (int) idObject;
-                    System.out.println("Selected book ID: " + bookId);
-                } else {
-                    Notification.showErrorMessage("Vyberte řádek s platným ID knihy.");
-                }
-            } else {
-                Notification.showErrorMessage("Nebyla vybrána žádná kniha. Vyberte knihu, prosím.");
-            }
+            addBookToCart();
         });
+    }
+
+    private void addBookToCart(){
+        int selectedRow = bookTable.getSelectedRow();
+        if (selectedRow != -1) {
+            Object idObject = bookTable.getValueAt(selectedRow, 0);
+            if (idObject != null) {
+                int bookId = (int) idObject;
+                System.out.println("Selected book ID: " + bookId);
+                writeBookIdToFile(bookId);
+            } else {
+                Notification.showErrorMessage("Vyberte řádek s platným ID knihy.");
+            }
+        } else {
+            Notification.showErrorMessage("Nebyla vybrána žádná kniha. Vyberte knihu, prosím.");
+        }
+    }
+
+    private void writeBookIdToFile(int bookId) {
+        try {
+            File file = new File("bookIDs.txt");
+
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.equals(String.valueOf(bookId))) {
+                    JOptionPane.showMessageDialog(this, "Toto ID knihy už bylo přidáno.");
+                    return;
+                }
+            }
+            scanner.close();
+
+            FileWriter fw = new FileWriter(file, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter pw = new PrintWriter(bw);
+            pw.println(bookId);
+            pw.close();
+            Notification.showSuccessMessage("Kniha byla přidána do košíku");
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void setupTitleFieldListener() {
@@ -259,7 +296,6 @@ public class Books extends JPanel {
             Object idObject = bookTable.getValueAt(selectedRow, 0);
             if (idObject != null) {
                 int bookId = (int) idObject;
-                System.out.println("Double-clicked book ID: " + bookId);
                 openDifferentPanel(bookId);
             }
         }

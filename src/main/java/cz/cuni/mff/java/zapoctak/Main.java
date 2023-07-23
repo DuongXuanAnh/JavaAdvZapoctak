@@ -9,6 +9,9 @@ import cz.cuni.mff.java.zapoctak.content.ReturnBook;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Main {
 
@@ -91,5 +94,17 @@ public class Main {
 
         frame.pack();
         frame.setVisible(true);
+        clearFile();
+
+    }
+
+    public static void clearFile(){
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                Files.deleteIfExists(Paths.get("bookIDs.txt"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
     }
 }
