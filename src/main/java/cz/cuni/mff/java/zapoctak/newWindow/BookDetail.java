@@ -4,30 +4,34 @@ import cz.cuni.mff.java.zapoctak.config.Config;
 import cz.cuni.mff.java.zapoctak.global.Notification;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.sql.*;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BookDetail extends JPanel {
-    private JTextField titleTextField;
+    private final JTextField titleTextField;
 
     private JComboBox<String> genresComboBox;
-    private JFormattedTextField yearField;
-    private JFormattedTextField priceField;
-    private JSpinner quantitySpinner;
-    private JTextArea descriptionArea;
-    private ArrayList<JComboBox<String>> authorComboBoxes;
+    private final JFormattedTextField yearField;
+    private final JFormattedTextField priceField;
+    private final JSpinner quantitySpinner;
+    private final JTextArea descriptionArea;
+    private final ArrayList<JComboBox<String>> authorComboBoxes;
     private JComboBox<String> authorComboBox;
 
-    private int bookId;
+    private final int bookId;
 
     public BookDetail(int bookId) {
         this.bookId = bookId;
         titleTextField = new JTextField(50);
         genresComboBox = new JComboBox<>();
-        priceField = new JFormattedTextField();
-        yearField = new JFormattedTextField();
+        priceField = new JFormattedTextField(createNumberFormatter());
+        yearField = new JFormattedTextField(createIntFormatter());
         quantitySpinner = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
         descriptionArea = new JTextArea(10, 20);
         authorComboBox = new JComboBox<>();
@@ -310,6 +314,11 @@ public class BookDetail extends JPanel {
             return;
         }
 
+        if (hasDuplicateAuthors(authorComboBoxes)) {
+            Notification.showErrorMessage("Autoři nesmí být stejní");
+            return;
+        }
+
         updateBookInDB(bookId, bookName, bookAuthors, bookGenre, bookPrice, bookYear, bookQuantity, bookDescription);
 
         System.out.println(bookAuthors.size());
@@ -332,11 +341,12 @@ public class BookDetail extends JPanel {
             int rowsUpdated = stmt.executeUpdate();
 
             if (rowsUpdated > 0) {
-                // Update the authors associated with the book
                 updateAuthorsForBook(bookId, authorNames);
                 System.out.println("Book updated successfully!");
+                Notification.showSuccessMessage("Kniha byla upravena");
             } else {
                 System.out.println("Failed to update the book!");
+                Notification.showSuccessMessage("Nastala chyba, zkuste to znovu!");
             }
 
         } catch (SQLException ex) {
@@ -387,6 +397,49 @@ public class BookDetail extends JPanel {
         });
     }
 
+    private boolean hasDuplicateAuthors(ArrayList<JComboBox<String>> authorComboBoxes) {
+        Set<String> authorNames = new HashSet<>();
 
+        for (JComboBox<String> comboBox : authorComboBoxes) {
+            String selectedAuthor = (String) comboBox.getSelectedItem();
+            if (selectedAuthor == null || selectedAuthor.isEmpty()) {
+                continue;
+            }
+            if (!authorNames.add(selectedAuthor)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     Creates and returns a NumberFormatter for formatting the price field.
+     @return NumberFormatter for formatting the price field
+     */
+    private NumberFormatter createNumberFormatter() {
+        NumberFormat format = NumberFormat.getNumberInstance();
+        NumberFormatter formatter = new NumberFormatter(format);
+        formatter.setValueClass(Double.class);
+        formatter.setMinimum(0.0);
+        formatter.setMaximum(Double.MAX_VALUE);
+        formatter.setAllowsInvalid(false);
+        formatter.setCommitsOnValidEdit(true);
+        return formatter;
+    }
+
+    /**
+     Creates and returns a NumberFormatter for formatting the year field.
+     @return NumberFormatter for formatting the year field
+     */
+    private NumberFormatter createIntFormatter() {
+        NumberFormat format = NumberFormat.getIntegerInstance();
+        NumberFormatter formatter = new NumberFormatter(format);
+        formatter.setValueClass(Integer.class);
+        formatter.setMinimum(0);
+        formatter.setMaximum(Integer.MAX_VALUE);
+        formatter.setAllowsInvalid(false);
+        formatter.setCommitsOnValidEdit(true);
+        return formatter;
+    }
 
 }
