@@ -67,6 +67,9 @@ public class BookDetail extends JPanel {
         addQuantityLabelAndSpinner(gbc);
         addDescriptionLabelAndTextArea(gbc);
         addAuthorLabelAndComboBox(gbc);
+        addAuthorButton(gbc);
+        addConfirmButton(gbc);
+        addCancelButton(gbc);
     }
 
     private GridBagConstraints getGridBagConstraints() {
@@ -149,6 +152,17 @@ public class BookDetail extends JPanel {
 
     }
 
+    private void addAuthorButton(GridBagConstraints gbc){
+        JButton addAuthorButton = new JButton("Přidat autora");
+        gbc.gridx = 1;
+        gbc.gridy = 7;
+        add(addAuthorButton, gbc);
+
+        addAuthorButton.addActionListener(e -> {
+            addNewAuthorCombobox(gbc);
+        });
+    }
+
     private void loadDataFromDatabase(int bookId) {
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("SELECT * FROM kniha WHERE id = ?")) {
@@ -178,7 +192,7 @@ public class BookDetail extends JPanel {
 
                     ArrayList<String> authors = loadAuthorsForBook(bookId);
 
-                    int row = 7;
+                    int row = 8;
                     for (String author : authors) {
                         JComboBox<String> authorComboBox = new JComboBox<>();
                         fillComboBoxWithAuthors(authorComboBox);
@@ -187,8 +201,16 @@ public class BookDetail extends JPanel {
                         GridBagConstraints gbc = getGridBagConstraints();
                         gbc.gridx = 1;
                         gbc.gridy = row;
-                        row++;
                         add(authorComboBox, gbc);
+
+                        JButton removeAuthorButton = new JButton("X");
+                        gbc.gridx = 2;
+                        row++;
+                        add(removeAuthorButton, gbc);
+
+                        removeAuthorButton.addActionListener(e -> {
+                            removeAuthorComboBox(authorComboBox, removeAuthorButton);
+                        });
                     }
                 }
             }
@@ -223,4 +245,58 @@ public class BookDetail extends JPanel {
         }
         return authors;
     }
+
+    private void removeAuthorComboBox(JComboBox<String> comboBoxToRemove, JButton buttonToRemove) {
+        remove(comboBoxToRemove);
+        remove(buttonToRemove);
+        authorComboBoxes.remove(comboBoxToRemove);
+        revalidate();
+        repaint();
+    }
+
+    private void addNewAuthorCombobox(GridBagConstraints gbc) {
+
+        JComboBox<String> newAuthorComboBox = new JComboBox<>();
+        fillComboBoxWithAuthors(newAuthorComboBox);
+        authorComboBoxes.add(newAuthorComboBox);
+
+        gbc.gridx = 1;
+        gbc.gridy = 20 + authorComboBoxes.size();
+        add(newAuthorComboBox, gbc);
+
+        JButton removeAuthorButton = new JButton("X");
+        gbc.gridx = 2;
+        add(removeAuthorButton, gbc);
+
+        removeAuthorButton.addActionListener(e -> {
+            removeAuthorComboBox(newAuthorComboBox, removeAuthorButton);
+        });
+
+        revalidate();
+        repaint();
+    }
+
+    private void addConfirmButton(GridBagConstraints gbc){
+        JButton addConfirmButton = new JButton("Uložit změny");
+        gbc.gridx = 1;
+        gbc.gridy = 100;
+        add(addConfirmButton, gbc);
+
+        addConfirmButton.addActionListener(e -> {
+
+        });
+    }
+
+    private void addCancelButton(GridBagConstraints gbc){
+        JButton addCancelButton = new JButton("Cancel");
+        gbc.gridx = 2;
+        gbc.gridy = 100;
+        add(addCancelButton, gbc);
+
+        addCancelButton.addActionListener(e -> {
+            JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            frame.dispose();
+        });
+    }
+
 }
