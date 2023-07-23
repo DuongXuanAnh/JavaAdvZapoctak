@@ -4,10 +4,7 @@ import cz.cuni.mff.java.zapoctak.config.Config;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -22,7 +19,7 @@ public class BookDetail extends JPanel {
     private ArrayList<JComboBox<String>> authorComboBoxes;
     private JComboBox<String> authorComboBox;
 
-    public BookDetail() {
+    public BookDetail(int bookId) {
         titleTextField = new JTextField(50);
         genresComboBox = new JComboBox<>();
         priceField = new JFormattedTextField();
@@ -32,7 +29,10 @@ public class BookDetail extends JPanel {
         authorComboBox = new JComboBox<>();
         fillComboBoxWithAuthors(authorComboBox);
         authorComboBoxes = new ArrayList<>();
+
         setupLayout();
+        loadDataFromDatabase(bookId);
+
     }
 
     private void fillComboBoxWithAuthors(JComboBox<String> authorComboBox) {
@@ -145,5 +145,49 @@ public class BookDetail extends JPanel {
         gbc.gridx = 1;
         authorComboBoxes.add(authorComboBox);
         add(authorComboBox, gbc);
+    }
+
+    private void loadDataFromDatabase(int bookId) {
+        try (Connection conn = Config.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM kniha WHERE id = ?")) {
+
+            stmt.setInt(1, bookId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String title = rs.getString("nazev");
+                    titleTextField.setText(title);
+
+                    String genre = rs.getString("zanr");
+                    genresComboBox.setSelectedItem(genre);
+
+                    int year = rs.getInt("rok_vydani");
+                    yearField.setValue(year);
+
+                    double price = rs.getDouble("cena");
+                    priceField.setValue(price);
+
+                    int quantity = rs.getInt("amount");
+                    quantitySpinner.setValue(quantity);
+
+                    String description = rs.getString("popis");
+                    description = insertLineBreaks(description, 100);
+                    descriptionArea.setText(description);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+    private String insertLineBreaks(String text, int lineLength) {
+        StringBuilder sb = new StringBuilder(text);
+        int offset = 0;
+        while (offset < sb.length()) {
+            offset = offset + lineLength;
+            if (offset < sb.length()) {
+                sb.insert(offset, "\n");
+            }
+        }
+        return sb.toString();
     }
 }

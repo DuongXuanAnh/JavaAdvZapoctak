@@ -236,7 +236,7 @@ public class Books extends JPanel {
 
     private void openDifferentPanel(int bookId) {
         // Create an instance of the BookDetail class
-        BookDetail bookDetail = new BookDetail();
+        BookDetail bookDetail = new BookDetail(bookId);
 
         // Create a new JFrame to display the BookDetail content
         JFrame bookDetailFrame = new JFrame("Book Details");
