@@ -1,6 +1,7 @@
 package cz.cuni.mff.java.zapoctak.newWindow;
 
 import cz.cuni.mff.java.zapoctak.config.Config;
+import cz.cuni.mff.java.zapoctak.global.Notification;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +20,10 @@ public class BookDetail extends JPanel {
     private ArrayList<JComboBox<String>> authorComboBoxes;
     private JComboBox<String> authorComboBox;
 
+    private int bookId;
+
     public BookDetail(int bookId) {
+        this.bookId = bookId;
         titleTextField = new JTextField(50);
         genresComboBox = new JComboBox<>();
         priceField = new JFormattedTextField();
@@ -284,7 +288,91 @@ public class BookDetail extends JPanel {
 
         addConfirmButton.addActionListener(e -> {
 
+            confirmBookUpdate();
+
         });
+    }
+
+    public void confirmBookUpdate(){
+        String bookName = titleTextField.getText();
+        Double bookPrice = (Double) priceField.getValue();
+        Integer bookYear = (Integer) yearField.getValue();
+        Integer bookQuantity = (Integer) quantitySpinner.getValue();
+        String bookDescription = descriptionArea.getText();
+        String bookGenre = (String) genresComboBox.getSelectedItem();
+        ArrayList<String> bookAuthors = new ArrayList<>();
+        for (JComboBox<String> authorComboBox : authorComboBoxes) {
+            bookAuthors.add((String) authorComboBox.getSelectedItem());
+        }
+
+        if (bookName.isEmpty() || bookGenre.isEmpty() || bookDescription.isEmpty() || bookAuthors.isEmpty() || bookPrice == null || bookYear == null || bookQuantity == null) {
+            Notification.showErrorMessage("Všechna pole musí být vyplněna");
+            return;
+        }
+
+        updateBookInDB(bookId, bookName, bookAuthors, bookGenre, bookPrice, bookYear, bookQuantity, bookDescription);
+
+        System.out.println(bookAuthors.size());
+    }
+
+    private void updateBookInDB(int bookId, String name, ArrayList<String> authorNames, String genre, double price, int year, int quantity, String description) {
+        try (Connection conn = Config.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("UPDATE kniha SET nazev=?, zanr=?, cena=?, rok_vydani=?, amount=?, popis=? WHERE id=?")) {
+
+            // Set the parameters for the prepared statement
+            stmt.setString(1, name);
+            stmt.setString(2, genre);
+            stmt.setDouble(3, price);
+            stmt.setInt(4, year);
+            stmt.setInt(5, quantity);
+            stmt.setString(6, description);
+            stmt.setInt(7, bookId);
+
+            // Execute the update query
+            int rowsUpdated = stmt.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                // Update the authors associated with the book
+                updateAuthorsForBook(bookId, authorNames);
+                System.out.println("Book updated successfully!");
+            } else {
+                System.out.println("Failed to update the book!");
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void updateAuthorsForBook(int bookId, ArrayList<String> authorNames) {
+        try (Connection conn = Config.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("DELETE FROM kniha_autor WHERE id_kniha=?")) {
+
+            // Delete all existing authors associated with the book
+            stmt.setInt(1, bookId);
+            stmt.executeUpdate();
+
+            // Insert the new authors into the kniha_autor table
+            for (String authorName : authorNames) {
+                insertAuthorForBook(bookId, authorName);
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void insertAuthorForBook(int bookId, String authorName) {
+        try (Connection conn = Config.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO kniha_autor (id_kniha, id_autor) VALUES (?, (SELECT id FROM autor WHERE jmeno=?))")) {
+
+            stmt.setInt(1, bookId);
+            stmt.setString(2, authorName);
+            stmt.executeUpdate();
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void addCancelButton(GridBagConstraints gbc){
@@ -298,5 +386,7 @@ public class BookDetail extends JPanel {
             frame.dispose();
         });
     }
+
+
 
 }
