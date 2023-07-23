@@ -3,6 +3,7 @@ package cz.cuni.mff.java.zapoctak.content;
 import cz.cuni.mff.java.zapoctak.config.Config;
 import cz.cuni.mff.java.zapoctak.global.Author;
 import cz.cuni.mff.java.zapoctak.global.TitleBorder;
+import cz.cuni.mff.java.zapoctak.newWindow.BookDetail;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -11,6 +12,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -52,6 +55,7 @@ public class Books extends JPanel {
     private void setupListeners() {
         setupTitleFieldListener();
         setupAuthorComboBoxListener();
+        setupDoubleClickListener();
     }
 
     private GridBagConstraints getGridBagConstraints() {
@@ -205,6 +209,42 @@ public class Books extends JPanel {
             ex.printStackTrace();
         }
         return authors;
+    }
+
+    private void setupDoubleClickListener() {
+        bookTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    handleDoubleClick();
+                }
+            }
+        });
+    }
+
+    private void handleDoubleClick() {
+        int selectedRow = bookTable.getSelectedRow();
+        if (selectedRow != -1) {
+            Object idObject = bookTable.getValueAt(selectedRow, 0);
+            if (idObject != null) {
+                int bookId = (int) idObject;
+                System.out.println("Double-clicked book ID: " + bookId);
+                openDifferentPanel(bookId);
+            }
+        }
+    }
+
+    private void openDifferentPanel(int bookId) {
+        // Create an instance of the BookDetail class
+        BookDetail bookDetail = new BookDetail();
+
+        // Create a new JFrame to display the BookDetail content
+        JFrame bookDetailFrame = new JFrame("Book Details");
+        bookDetailFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        bookDetailFrame.add(bookDetail);
+        bookDetailFrame.pack();
+        bookDetailFrame.setVisible(true);
+
     }
 
 }
