@@ -2,6 +2,7 @@ package cz.cuni.mff.java.zapoctak.content;
 
 import cz.cuni.mff.java.zapoctak.config.Config;
 import cz.cuni.mff.java.zapoctak.global.Author;
+import cz.cuni.mff.java.zapoctak.global.Notification;
 import cz.cuni.mff.java.zapoctak.global.TitleBorder;
 import cz.cuni.mff.java.zapoctak.newWindow.BookDetail;
 
@@ -39,6 +40,7 @@ public class Books extends JPanel {
         bookTable = createTable();
 
         setupLayout();
+        setupSubmitButton();
         setupListeners();
         updateTableModel();
     }
@@ -51,6 +53,8 @@ public class Books extends JPanel {
         addNameLabelAndField(gbc);
         addTable(gbc);
     }
+
+
 
     private void setupListeners() {
         setupTitleFieldListener();
@@ -153,6 +157,31 @@ public class Books extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(bookTable);
         add(scrollPane, gbc);
+    }
+
+    private void setupSubmitButton() {
+        JButton submitButton = new JButton("Přidat knihu do košíku");
+        GridBagConstraints gbc = getGridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(submitButton, gbc);
+
+        submitButton.addActionListener(e -> {
+            int selectedRow = bookTable.getSelectedRow();
+            if (selectedRow != -1) {
+                Object idObject = bookTable.getValueAt(selectedRow, 0);
+                if (idObject != null) {
+                    int bookId = (int) idObject;
+                    System.out.println("Selected book ID: " + bookId);
+                } else {
+                    Notification.showErrorMessage("Vyberte řádek s platným ID knihy.");
+                }
+            } else {
+                Notification.showErrorMessage("Nebyla vybrána žádná kniha. Vyberte knihu, prosím.");
+            }
+        });
     }
 
     private void setupTitleFieldListener() {
