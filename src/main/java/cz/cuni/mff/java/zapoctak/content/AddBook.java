@@ -36,7 +36,7 @@ public class AddBook extends JPanel {
     public AddBook(){
         this.setBorder(TitleBorder.create("Přidat knihu"));
 
-        nameField = new JTextField(20);
+        nameField = new JTextField(50);
         authorComboBox = new JComboBox<>();
         fillComboBoxWithAuthors(authorComboBox);
         authorComboBoxes = new ArrayList<>();

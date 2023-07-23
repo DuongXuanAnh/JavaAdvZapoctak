@@ -1,7 +1,14 @@
 package cz.cuni.mff.java.zapoctak.newWindow;
 
+import cz.cuni.mff.java.zapoctak.config.Config;
+
 import javax.swing.*;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BookDetail extends JPanel {
@@ -12,8 +19,8 @@ public class BookDetail extends JPanel {
     private JFormattedTextField priceField;
     private JSpinner quantitySpinner;
     private JTextArea descriptionArea;
-//    private ArrayList<JComboBox<String>> authorComboBoxes;
-//    private JComboBox<String> authorComboBox;
+    private ArrayList<JComboBox<String>> authorComboBoxes;
+    private JComboBox<String> authorComboBox;
 
     public BookDetail() {
         titleTextField = new JTextField(50);
@@ -22,7 +29,32 @@ public class BookDetail extends JPanel {
         yearField = new JFormattedTextField();
         quantitySpinner = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
         descriptionArea = new JTextArea(10, 20);
+        authorComboBox = new JComboBox<>();
+        fillComboBoxWithAuthors(authorComboBox);
+        authorComboBoxes = new ArrayList<>();
         setupLayout();
+    }
+
+    private void fillComboBoxWithAuthors(JComboBox<String> authorComboBox) {
+        ArrayList<String> authors = loadAuthorsFromDB();
+        for (String author : authors) {
+            authorComboBox.addItem(author);
+        }
+    }
+
+    private ArrayList<String> loadAuthorsFromDB() {
+        ArrayList<String> authors = new ArrayList<>();
+        try (Connection conn = Config.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT id, jmeno FROM autor")) {
+
+            while (rs.next()) {
+                authors.add(rs.getString("jmeno"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return authors;
     }
 
     private void setupLayout() {
@@ -34,6 +66,7 @@ public class BookDetail extends JPanel {
         addYearLabelAndField(gbc);
         addQuantityLabelAndSpinner(gbc);
         addDescriptionLabelAndTextArea(gbc);
+        addAuthorLabelAndComboBox(gbc);
     }
 
     private GridBagConstraints getGridBagConstraints() {
@@ -101,5 +134,16 @@ public class BookDetail extends JPanel {
         add(descriptionLabel, gbc);
         gbc.gridx = 1;
         add(descriptionArea, gbc);
+    }
+
+    private void addAuthorLabelAndComboBox(GridBagConstraints gbc) {
+        JLabel nameLabel = new JLabel("Autor");
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        add(nameLabel, gbc);
+
+        gbc.gridx = 1;
+        authorComboBoxes.add(authorComboBox);
+        add(authorComboBox, gbc);
     }
 }
