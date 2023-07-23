@@ -142,9 +142,11 @@ public class BookDetail extends JPanel {
         gbc.gridy = 7;
         add(nameLabel, gbc);
 
-        gbc.gridx = 1;
-        authorComboBoxes.add(authorComboBox);
-        add(authorComboBox, gbc);
+
+//        gbc.gridx = 1;
+//        authorComboBoxes.add(authorComboBox);
+//        add(authorComboBox, gbc);
+
     }
 
     private void loadDataFromDatabase(int bookId) {
@@ -173,6 +175,21 @@ public class BookDetail extends JPanel {
                     String description = rs.getString("popis");
                     description = insertLineBreaks(description, 100);
                     descriptionArea.setText(description);
+
+                    ArrayList<String> authors = loadAuthorsForBook(bookId);
+
+                    int row = 7;
+                    for (String author : authors) {
+                        JComboBox<String> authorComboBox = new JComboBox<>();
+                        fillComboBoxWithAuthors(authorComboBox);
+                        authorComboBox.setSelectedItem(author);
+                        authorComboBoxes.add(authorComboBox);
+                        GridBagConstraints gbc = getGridBagConstraints();
+                        gbc.gridx = 1;
+                        gbc.gridy = row;
+                        row++;
+                        add(authorComboBox, gbc);
+                    }
                 }
             }
         } catch (SQLException ex) {
@@ -189,5 +206,21 @@ public class BookDetail extends JPanel {
             }
         }
         return sb.toString();
+    }
+
+    private ArrayList<String> loadAuthorsForBook(int bookId) {
+        ArrayList<String> authors = new ArrayList<>();
+        try (Connection conn = Config.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT autor_id, jmeno FROM kniha_autor_view WHERE id = ?")) {
+            stmt.setInt(1, bookId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    authors.add(rs.getString("jmeno"));
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return authors;
     }
 }
