@@ -1,10 +1,22 @@
 package cz.cuni.mff.java.zapoctak.global;
 
 public class BookData {
+
+
+    private int id;
     private String title;
     private double price;
 
     private int amount;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
 
     public String getTitle() {
         return this.title;

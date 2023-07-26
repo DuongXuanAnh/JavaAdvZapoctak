@@ -10,12 +10,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class AddDocument extends JPanel {
 
@@ -58,15 +64,40 @@ public class AddDocument extends JPanel {
 
         JButton removeOrderBookButton = new JButton("X");
         removeOrderBookButton.addActionListener(e -> {
-            removeOrderBook();
+            removeOrderBook(book, chosenBook, spinner, removeOrderBookButton);
         });
         gbc.gridx = 2;
         gbc.gridy = 5 + posisionIndex;
         add(removeOrderBookButton, gbc);
     }
 
-    private void removeOrderBook() {
-        System.out.println("Delete");
+    private void removeOrderBook(BookData book, JLabel chosenBook, JSpinner spinner, JButton removeOrderBookButton) {
+        chosenBooks.remove(book);
+        remove(chosenBook);
+        remove(spinner);
+        remove(removeOrderBookButton);
+        revalidate();
+        repaint();
+        deleteBookIDFromFile(book.getId());
+    }
+
+    private void deleteBookIDFromFile(int bookId) {
+        try {
+            Path filePath = Paths.get("bookIDs.txt");
+            Path tempFilePath = Paths.get("tempBookIDs.txt");
+
+            // Read all lines from the original file, excluding the one with the bookId
+            Files.write(tempFilePath, Files.lines(filePath)
+                    .filter(line -> !line.trim().equals(Integer.toString(bookId)))
+                    .collect(Collectors.toList()));
+
+            // Replace the original file with the updated one
+            Files.delete(filePath);
+            Files.move(tempFilePath, filePath);
+        } catch (IOException e) {
+            System.out.println("Nastal problém při mazání knihy z 'bookIDs.txt'.");
+            e.printStackTrace();
+        }
     }
 
     private void addChoosenBookAndAmoutSpinner(GridBagConstraints gbc) {
@@ -144,7 +175,7 @@ public class AddDocument extends JPanel {
     public BookData getBookTitleAndPriceFromDB(int bookId){
         BookData bookData = new BookData();
         try (Connection conn = Config.getConnection();
-             PreparedStatement statement = conn.prepareStatement("SELECT nazev, cena, amount FROM kniha WHERE id = ?")) {
+             PreparedStatement statement = conn.prepareStatement("SELECT id, nazev, cena, amount FROM kniha WHERE id = ?")) {
 
             statement.setInt(1, bookId);
             ResultSet resultSet = statement.executeQuery();
@@ -153,6 +184,7 @@ public class AddDocument extends JPanel {
                 bookData.setTitle(resultSet.getString("nazev"));
                 bookData.setPrice(resultSet.getDouble("cena"));
                 bookData.setAmount(resultSet.getInt("amount"));
+                bookData.setId(resultSet.getInt("id"));
             } else {
                 System.out.println("Nenalezeno žádné data pro knihu s ID: " + bookId);
                 Notification.showErrorMessage("Nenalezeno žádné data pro knihu s ID: " + bookId);
