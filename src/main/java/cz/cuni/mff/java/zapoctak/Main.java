@@ -94,17 +94,17 @@ public class Main {
 
         frame.pack();
         frame.setVisible(true);
-        clearFile();
+//        clearFile();
 
     }
 
-    public static void clearFile(){
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                Files.deleteIfExists(Paths.get("bookIDs.txt"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }));
-    }
+//    public static void clearFile(){
+//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            try {
+//                Files.deleteIfExists(Paths.get("bookIDs.txt"));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }));
+//    }
 }
