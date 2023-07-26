@@ -4,6 +4,8 @@ public class BookData {
     private String title;
     private double price;
 
+    private int amount;
+
     public String getTitle() {
         return this.title;
     }
@@ -18,5 +20,13 @@ public class BookData {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public double getAmount() {
+        return this.amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
     }
 }

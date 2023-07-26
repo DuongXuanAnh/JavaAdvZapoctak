@@ -44,6 +44,31 @@ public class AddDocument extends JPanel {
         addChoosenBookAndAmoutSpinner(gbc);
     }
 
+    private void showChosenBook(GridBagConstraints gbc, BookData book, int posisionIndex){
+        JLabel chosenBook = new JLabel("* " + book.getTitle() + " - " + book.getPrice() + "Kč");
+        gbc.gridx = 0;
+        gbc.gridy = 5 + posisionIndex;
+        add(chosenBook, gbc);
+
+        SpinnerModel model = new SpinnerNumberModel(1, 1, book.getAmount(), 1);
+        JSpinner spinner = new JSpinner(model);
+        gbc.gridx = 1;
+        gbc.gridy = 5 + posisionIndex;
+        add(spinner, gbc);
+
+        JButton removeOrderBookButton = new JButton("X");
+        removeOrderBookButton.addActionListener(e -> {
+            removeOrderBook();
+        });
+        gbc.gridx = 2;
+        gbc.gridy = 5 + posisionIndex;
+        add(removeOrderBookButton, gbc);
+    }
+
+    private void removeOrderBook() {
+        System.out.println("Delete");
+    }
+
     private void addChoosenBookAndAmoutSpinner(GridBagConstraints gbc) {
         JLabel ChosenBookTitleLabel = new JLabel("Vybrané knihy:");
         gbc.gridx = 0;
@@ -55,8 +80,10 @@ public class AddDocument extends JPanel {
         if (chosenBooks.isEmpty()) {
             System.out.println("Seznam vybraných knih je prázdný.");
         } else {
+            int posisionIndex = 0;
             for (BookData book : chosenBooks) {
-                System.out.println("Název: " + book.getTitle() + ", Cena: " + book.getPrice());
+                showChosenBook(gbc, book,posisionIndex);
+                posisionIndex++;
             }
         }
     }
@@ -117,7 +144,7 @@ public class AddDocument extends JPanel {
     public BookData getBookTitleAndPriceFromDB(int bookId){
         BookData bookData = new BookData();
         try (Connection conn = Config.getConnection();
-             PreparedStatement statement = conn.prepareStatement("SELECT nazev, cena FROM kniha WHERE id = ?")) {
+             PreparedStatement statement = conn.prepareStatement("SELECT nazev, cena, amount FROM kniha WHERE id = ?")) {
 
             statement.setInt(1, bookId);
             ResultSet resultSet = statement.executeQuery();
@@ -125,6 +152,7 @@ public class AddDocument extends JPanel {
             if (resultSet.next()) {
                 bookData.setTitle(resultSet.getString("nazev"));
                 bookData.setPrice(resultSet.getDouble("cena"));
+                bookData.setAmount(resultSet.getInt("amount"));
             } else {
                 System.out.println("Nenalezeno žádné data pro knihu s ID: " + bookId);
                 Notification.showErrorMessage("Nenalezeno žádné data pro knihu s ID: " + bookId);
