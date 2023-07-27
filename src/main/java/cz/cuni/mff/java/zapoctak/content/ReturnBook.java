@@ -22,6 +22,7 @@ public class ReturnBook extends JPanel {
     private JPanel tablePanel;
     private JLabel customerNameLabel;
 
+
     public ReturnBook() {
         this.setBorder(TitleBorder.create("Vrácení knihy"));
         documentID = new JTextField(11);
@@ -36,8 +37,24 @@ public class ReturnBook extends JPanel {
         addDocumentIDLabelAndField();
         add(containerPanel, BorderLayout.NORTH);
 
-        tablePanel = new JPanel(new BorderLayout());
+        tablePanel = new JPanel();
+        tablePanel.setLayout(new BorderLayout());
         add(tablePanel, BorderLayout.CENTER);
+    }
+
+    private void addReturnButton() {
+        JButton returnBookButton = new JButton("Vrátit knihy");
+        returnBookButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (currentTable != null) {
+                    System.out.println("Vratit knihu");
+                }
+            }
+        });
+        tablePanel.add(returnBookButton, BorderLayout.SOUTH);
+        tablePanel.revalidate();
+        tablePanel.repaint();
     }
 
     private void addDocumentIDLabelAndField() {
@@ -105,6 +122,7 @@ public class ReturnBook extends JPanel {
 
         tablePanel.removeAll(); // Remove old table if it exists
         tablePanel.add(scrollPane, BorderLayout.CENTER);
+        addReturnButton(); // Add the button after the table is created
         tablePanel.revalidate();
         tablePanel.repaint();
     }
