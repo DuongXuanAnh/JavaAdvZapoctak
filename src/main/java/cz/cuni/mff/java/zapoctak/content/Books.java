@@ -56,8 +56,6 @@ public class Books extends JPanel {
         addTable(gbc);
     }
 
-
-
     private void setupListeners() {
         setupTitleFieldListener();
         setupAuthorComboBoxListener();
@@ -103,7 +101,6 @@ public class Books extends JPanel {
                     Object idObject = table.getValueAt(selectedRow, 0);
                     if (idObject != null) {
                         int bookId = (int) idObject;
-                        System.out.println("Selected book ID: " + bookId);
                     }
                 }
             }
@@ -179,10 +176,14 @@ public class Books extends JPanel {
         int selectedRow = bookTable.getSelectedRow();
         if (selectedRow != -1) {
             Object idObject = bookTable.getValueAt(selectedRow, 0);
+            Object amountObject = bookTable.getValueAt(selectedRow, 2); // Get the amount of the book
             if (idObject != null) {
-                int bookId = (int) idObject;
-                System.out.println("Selected book ID: " + bookId);
-                writeBookIdToFile(bookId);
+                if (amountObject != null && (int) amountObject > 0) { // Check if the amount is greater than 0
+                    int bookId = (int) idObject;
+                    writeBookIdToFile(bookId);
+                } else {
+                    Notification.showErrorMessage("Tato kniha již není k dispozici.");
+                }
             } else {
                 Notification.showErrorMessage("Vyberte řádek s platným ID knihy.");
             }
