@@ -15,10 +15,8 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -59,17 +57,16 @@ public class AddDocument extends JPanel {
     }
 
     private void submitDocument() {
-        System.out.println("Typ dokladu: " + typeComboBox.getSelectedItem());
-        System.out.println("Datum: " + dateChooser.getDate());
-        System.out.println("ID zákazníka: " + customerIdField.getText());
-        for (int i = 0; i < chosenBooks.size(); i++) {
-            BookData book = chosenBooks.get(i);
-            JSpinner spinner = spinners.get(i);
-            System.out.println("Vybraná kniha: " + book.getTitle());
-            System.out.println("Cena: " + book.getPrice());
-            System.out.println("Počet: " + spinner.getValue());
+        double totalPrice = calculateTotalPrice();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String dateRentTo = ((String) typeComboBox.getSelectedItem()).equals("Koupit") ? null : format.format(dateChooser.getDate());
+        int customerID = Integer.parseInt(customerIdField.getText());
+        int ducumentId = insertDocument(totalPrice, dateRentTo);
+
+        if (ducumentId != -1) {
+            insertDocumentItems(ducumentId);
+            insertDocumentCustomer(ducumentId, customerID);
         }
-        System.out.println("Celková cena: " + totalPriceDisplayed.getText());
     }
 
     private void setupLayout() {
@@ -259,6 +256,71 @@ public class AddDocument extends JPanel {
     private void updateTotalPrice() {
         double totalPrice = calculateTotalPrice();
         totalPriceDisplayed.setText(totalPrice + " Kč");
+    }
+
+    private int insertDocument(double totalPrice, String dateRentTo) {
+        String sql_doklad = (dateRentTo == null) ?
+                "INSERT INTO doklad (totalPrice) VALUES (?)" :
+                "INSERT INTO doklad (datumTo, totalPrice) VALUES (?, ?)";
+        int ducumentId = -1;
+        try (PreparedStatement statement_doklad = Config.getConnection().prepareStatement(sql_doklad, Statement.RETURN_GENERATED_KEYS)) {
+            if (dateRentTo == null) {
+                statement_doklad.setDouble(1, totalPrice);
+            } else {
+                statement_doklad.setString(1, dateRentTo);
+                statement_doklad.setDouble(2, totalPrice);
+            }
+            int rowsInserted = statement_doklad.executeUpdate();
+            if (rowsInserted > 0) {
+                try (ResultSet generatedKeys = statement_doklad.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        ducumentId = generatedKeys.getInt(1);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println("Nastal problém při vložení dokumentu, zkuste to znovu nebo informujte IT oddělení");
+            ex.printStackTrace();
+        }
+        return ducumentId;
+    }
+
+    private void insertDocumentItems(int ducumentId) {
+        for (int i = 0; i < chosenBooks.size(); i++) {
+            BookData book = chosenBooks.get(i);
+            JSpinner spinner = spinners.get(i);
+            int amount = ((Number)spinner.getValue()).intValue();
+
+            try (PreparedStatement statement_kniha = Config.getConnection().prepareStatement("UPDATE kniha SET amount = amount - ? WHERE id = ?")) {
+                statement_kniha.setInt(1, amount);
+                statement_kniha.setInt(2, book.getId());
+                statement_kniha.executeUpdate();
+            } catch (SQLException ex) {
+                System.out.println("Nastal problém při aktualizaci knihy, zkuste to znovu nebo informujte IT oddělení");
+                ex.printStackTrace();
+            }
+
+            try (PreparedStatement statement_doklad_kniha = Config.getConnection().prepareStatement("INSERT INTO doklad_kniha (id_doklad, id_kniha, amount) VALUES (?, ?, ?)")) {
+                statement_doklad_kniha.setInt(1, ducumentId);
+                statement_doklad_kniha.setInt(2, book.getId());
+                statement_doklad_kniha.setInt(3, amount);
+                statement_doklad_kniha.executeUpdate();
+            } catch (SQLException ex) {
+                System.out.println("Nastal problém při vložení záznamu doklad_kniha, zkuste to znovu nebo informujte IT oddělení");
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void insertDocumentCustomer(int ducumentId, int customerID) {
+        try (PreparedStatement statement_doklad_zakaznik = Config.getConnection().prepareStatement("INSERT INTO doklad_zakaznik (id_doklad, id_zakaznik) VALUES (?, ?)")) {
+            statement_doklad_zakaznik.setInt(1, ducumentId);
+            statement_doklad_zakaznik.setInt(2, customerID);
+            statement_doklad_zakaznik.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println("Nastal problém při vložení záznamu doklad_zakaznik, zkuste to znovu nebo informujte IT oddělení");
+            ex.printStackTrace();
+        }
     }
 
 }
