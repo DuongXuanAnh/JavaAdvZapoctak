@@ -31,11 +31,15 @@ public class AddDocument extends JPanel {
 
     ArrayList<BookData> chosenBooks = new ArrayList<>();
 
+    ArrayList<JSpinner> spinners = new ArrayList<>();
+    JLabel totalPriceDisplayed;
+
     public AddDocument(){
         this.setBorder(TitleBorder.create("Vytvořit objednávku"));
         typeComboBox = new JComboBox<>(new String[]{"Pujčit", "Koupit"});
         dateChooser = new JDateChooser();
         customerIdField = new JTextField(20);
+        totalPriceDisplayed = new JLabel("");
         setupLayout();
 
     }
@@ -47,7 +51,19 @@ public class AddDocument extends JPanel {
         addTypeAndComboBox(gbc);
         addDateAndDateChooser(gbc);
         addCustomerIdAndLabel(gbc);
-        addChoosenBookAndAmoutSpinner(gbc);
+        addChosenBookAndAmountSpinner(gbc);
+        displayTotalPrice(gbc);
+    }
+
+    private void displayTotalPrice(GridBagConstraints gbc) {
+        JLabel totalPriceLabel = new JLabel("Celková cena:");
+        gbc.gridx = 0;
+        gbc.gridy = 50;
+        add(totalPriceLabel, gbc);
+
+        updateTotalPrice();
+        gbc.gridx = 1;
+        add(totalPriceDisplayed, gbc);
     }
 
     private void showChosenBook(GridBagConstraints gbc, BookData book, int posisionIndex){
@@ -58,6 +74,8 @@ public class AddDocument extends JPanel {
 
         SpinnerModel model = new SpinnerNumberModel(1, 1, book.getAmount(), 1);
         JSpinner spinner = new JSpinner(model);
+        spinners.add(spinner);
+        spinner.addChangeListener(e -> updateTotalPrice());
         gbc.gridx = 1;
         gbc.gridy = 5 + posisionIndex;
         add(spinner, gbc);
@@ -73,8 +91,10 @@ public class AddDocument extends JPanel {
 
     private void removeOrderBook(BookData book, JLabel chosenBook, JSpinner spinner, JButton removeOrderBookButton) {
         chosenBooks.remove(book);
+        spinners.remove(spinner);
         remove(chosenBook);
         remove(spinner);
+        updateTotalPrice();
         remove(removeOrderBookButton);
         revalidate();
         repaint();
@@ -100,7 +120,7 @@ public class AddDocument extends JPanel {
         }
     }
 
-    private void addChoosenBookAndAmoutSpinner(GridBagConstraints gbc) {
+    private void addChosenBookAndAmountSpinner(GridBagConstraints gbc) {
         JLabel ChosenBookTitleLabel = new JLabel("Vybrané knihy:");
         gbc.gridx = 0;
         gbc.gridy = 4;
@@ -111,10 +131,10 @@ public class AddDocument extends JPanel {
         if (chosenBooks.isEmpty()) {
             System.out.println("Seznam vybraných knih je prázdný.");
         } else {
-            int posisionIndex = 0;
+            int positionIndex = 0;
             for (BookData book : chosenBooks) {
-                showChosenBook(gbc, book,posisionIndex);
-                posisionIndex++;
+                showChosenBook(gbc, book, positionIndex);
+                positionIndex++;
             }
         }
     }
@@ -196,6 +216,21 @@ public class AddDocument extends JPanel {
         }
 
         return bookData;
+    }
+
+    public double calculateTotalPrice() {
+        double totalPrice = 0;
+        for (int i = 0; i < chosenBooks.size(); i++) {
+            BookData book = chosenBooks.get(i);
+            JSpinner spinner = spinners.get(i);
+            totalPrice += book.getPrice() * ((Number) ((SpinnerNumberModel) spinner.getModel()).getValue()).intValue();
+        }
+        return totalPrice;
+    }
+
+    private void updateTotalPrice() {
+        double totalPrice = calculateTotalPrice();
+        totalPriceDisplayed.setText(totalPrice + " Kč");
     }
 
 }
