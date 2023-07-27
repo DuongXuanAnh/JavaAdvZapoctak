@@ -59,7 +59,17 @@ public class AddDocument extends JPanel {
     }
 
     private void submitDocument() {
-        System.out.println("Document submited");
+        System.out.println("Typ dokladu: " + typeComboBox.getSelectedItem());
+        System.out.println("Datum: " + dateChooser.getDate());
+        System.out.println("ID zákazníka: " + customerIdField.getText());
+        for (int i = 0; i < chosenBooks.size(); i++) {
+            BookData book = chosenBooks.get(i);
+            JSpinner spinner = spinners.get(i);
+            System.out.println("Vybraná kniha: " + book.getTitle());
+            System.out.println("Cena: " + book.getPrice());
+            System.out.println("Počet: " + spinner.getValue());
+        }
+        System.out.println("Celková cena: " + totalPriceDisplayed.getText());
     }
 
     private void setupLayout() {
