@@ -41,7 +41,25 @@ public class AddDocument extends JPanel {
         customerIdField = new JTextField(20);
         totalPriceDisplayed = new JLabel("");
         setupLayout();
+        setupSubmitButton();
+    }
 
+    private void setupSubmitButton() {
+        JButton submitDocumentButton = new JButton("Přidat doklad");
+        GridBagConstraints gbc = getGridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 51;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(submitDocumentButton, gbc);
+
+        submitDocumentButton.addActionListener(e -> {
+            submitDocument();
+        });
+    }
+
+    private void submitDocument() {
+        System.out.println("Document submited");
     }
 
     private void setupLayout() {
