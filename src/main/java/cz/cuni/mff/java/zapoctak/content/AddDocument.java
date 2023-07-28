@@ -18,8 +18,10 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+
 
 public class AddDocument extends JPanel {
 
@@ -34,7 +36,7 @@ public class AddDocument extends JPanel {
 
     public AddDocument(){
         this.setBorder(TitleBorder.create("Vytvořit objednávku"));
-        typeComboBox = new JComboBox<>(new String[]{"Pujčit", "Koupit"});
+        typeComboBox = new JComboBox<>(new String[]{"Půjčit", "Koupit"});
         dateChooser = new JDateChooser();
         customerIdField = new JTextField(20);
         totalPriceDisplayed = new JLabel("");
@@ -59,15 +61,49 @@ public class AddDocument extends JPanel {
     private void submitDocument() {
         double totalPrice = calculateTotalPrice();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        String dateRentTo = ((String) typeComboBox.getSelectedItem()).equals("Koupit") ? null : format.format(dateChooser.getDate());
-        int customerID = Integer.parseInt(customerIdField.getText());
-        int ducumentId = insertDocument(totalPrice, dateRentTo);
 
-        if (ducumentId != -1) {
-            insertDocumentItems(ducumentId);
-            insertDocumentCustomer(ducumentId, customerID);
+        if(totalPrice == 0){
+            Notification.showErrorMessage("Košík je prázdný");
+            return;
+        }
+
+        Date currentDate = new Date();
+        Date chosenDate = dateChooser.getDate();
+
+        String selectedOption = (String) typeComboBox.getSelectedItem();
+
+        if(selectedOption.equals("Půjčit") && chosenDate == null) {
+            Notification.showErrorMessage("Vyberte prosím datum");
+            return;
+        }
+
+        if(chosenDate != null && chosenDate.before(currentDate)) {
+            Notification.showErrorMessage("Vybraný den musí být v budoucnosti");
+            return;
+        }
+
+        String dateRentTo = selectedOption.equals("Koupit") ? null : format.format(chosenDate);
+
+        int customerID;
+
+        try {
+            customerID = Integer.parseInt(customerIdField.getText());
+        } catch (NumberFormatException e) {
+            Notification.showErrorMessage("Customer ID musí být číslo");
+            return;
+        }
+
+        int documentId = insertDocument(totalPrice, dateRentTo);
+
+        if (documentId != -1) {
+            insertDocumentItems(documentId);
+            insertDocumentCustomer(documentId, customerID);
+            resetFields();
+            Notification.showSuccessMessage("Objednávka byla úspěšně vytvořena.");
         }
     }
+
+
 
     private void setupLayout() {
         setLayout(new GridBagLayout());
@@ -321,6 +357,34 @@ public class AddDocument extends JPanel {
             System.out.println("Nastal problém při vložení záznamu doklad_zakaznik, zkuste to znovu nebo informujte IT oddělení");
             ex.printStackTrace();
         }
+    }
+
+    private void resetFields() {
+        // Clear books
+        for (int i = 0; i < chosenBooks.size(); i++) {
+            removeOrderBook(chosenBooks.get(i), new JLabel(), spinners.get(i), new JButton());
+        }
+
+        customerIdField.setText("");
+
+        dateChooser.setDate(null);
+
+
+
+        try {
+            PrintWriter writer = new PrintWriter("bookIDs.txt");
+            writer.print("");
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Nastal problém při mazání souboru 'bookIDs.txt'.");
+            e.printStackTrace();
+        }
+
+        updateTotalPrice();
+
+        revalidate();
+        repaint();
+
     }
 
 }
