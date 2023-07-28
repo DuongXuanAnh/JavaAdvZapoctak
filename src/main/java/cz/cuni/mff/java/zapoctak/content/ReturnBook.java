@@ -13,19 +13,28 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class ReturnBook extends JPanel {
 
-    private JTextField documentID;
+    private final JTextField documentID;
     private JPanel containerPanel;
     private JTable currentTable;
     private JPanel tablePanel;
     private JLabel customerNameLabel;
+    private JScrollPane scrollPane;
+
+    private int currDocumentID;
+
+    private final ArrayList<Integer> bookIdList;
+    private final ArrayList<Integer> amountRentBooksList;
 
 
     public ReturnBook() {
         this.setBorder(TitleBorder.create("Vrácení knihy"));
         documentID = new JTextField(11);
+        bookIdList = new ArrayList<>();
+        amountRentBooksList= new ArrayList<>();
         setupLayout();
     }
 
@@ -48,13 +57,76 @@ public class ReturnBook extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (currentTable != null) {
-                    System.out.println("Vratit knihu");
+                    // here
+                    System.out.println(currDocumentID);
+                    updateBookAmnoutInDB();
+                    deleteDocumentFromDB();
+                    deleteDocumentBook();
+                    deleteDocumentCustomer();
+                    clearTableAndCustomerName();
+                    Notification.showSuccessMessage("Knihy byly vráceny");
                 }
             }
         });
         tablePanel.add(returnBookButton, BorderLayout.SOUTH);
         tablePanel.revalidate();
         tablePanel.repaint();
+    }
+
+    private void deleteDocumentCustomer() {
+        String deleteDokladZakaznikSql = "DELETE FROM doklad_zakaznik WHERE id_doklad = ?";
+        PreparedStatement deleteDokladZakaznikStatement = null;
+        try {
+            deleteDokladZakaznikStatement = Config.getConnection().prepareStatement(deleteDokladZakaznikSql);
+            deleteDokladZakaznikStatement.setInt(1, currDocumentID);
+            deleteDokladZakaznikStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void deleteDocumentBook() {
+        String deleteDokladKnihaSql = "DELETE FROM doklad_kniha WHERE id_doklad = ?";
+        PreparedStatement deleteDokladKnihaStatement = null;
+        try {
+            deleteDokladKnihaStatement = Config.getConnection().prepareStatement(deleteDokladKnihaSql);
+            deleteDokladKnihaStatement.setInt(1, currDocumentID);
+            deleteDokladKnihaStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteDocumentFromDB() {
+        String deleteDokladSql = "DELETE FROM doklad WHERE id = ?";
+        PreparedStatement deleteDokladStatement = null;
+        try {
+            deleteDokladStatement = Config.getConnection().prepareStatement(deleteDokladSql);
+            deleteDokladStatement.setInt(1, currDocumentID);
+            deleteDokladStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void updateBookAmnoutInDB(){
+        for (int i = 0; i < bookIdList.size(); i++){
+            int bookID = bookIdList.get(i);
+            int bookAmount = amountRentBooksList.get(i);
+            String updateBookAmountSql = "UPDATE kniha SET amount=amount + ? WHERE id=?";
+            PreparedStatement updateBookAmountStatement = null;
+            try {
+                updateBookAmountStatement = Config.getConnection().prepareStatement(updateBookAmountSql);
+                updateBookAmountStatement.setInt(1, bookAmount);
+                updateBookAmountStatement.setInt(2, bookID);
+                updateBookAmountStatement.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
     }
 
     private void addDocumentIDLabelAndField() {
@@ -118,7 +190,7 @@ public class ReturnBook extends JPanel {
 
         DefaultTableModel tableModel = new DefaultTableModel(tableData, columnNames);
         currentTable = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(currentTable);
+        scrollPane = new JScrollPane(currentTable);
 
         tablePanel.removeAll(); // Remove old table if it exists
         tablePanel.add(scrollPane, BorderLayout.CENTER);
@@ -139,6 +211,7 @@ public class ReturnBook extends JPanel {
             String sql = "SELECT * FROM document WHERE dokladID = ?";
             PreparedStatement statement = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
+
             statement.setInt(1, Integer.parseInt(documentIDText));
 
             ResultSet resultSet = statement.executeQuery();
@@ -146,8 +219,12 @@ public class ReturnBook extends JPanel {
             if (resultSet.next()) {
                 addCustomerLabel(resultSet.getString("jmeno"), resultSet.getInt("zakaznikID"));
 
+                bookIdList.add(resultSet.getInt("bookID"));
+                amountRentBooksList.add(resultSet.getInt("amount"));
+
                 Object[][] tableData = getTableDataFromResultSet(resultSet);
                 addTableToPanel(tableData);
+                currDocumentID = Integer.parseInt(documentIDText);
             } else {
                 Notification.showErrorMessage("ID objednávky neexistuje");
                 System.out.println("No records found for document ID " + documentIDText);
@@ -166,6 +243,23 @@ public class ReturnBook extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 5, 5, 5);
         return gbc;
+    }
+
+    private void clearTableAndCustomerName() {
+        if (scrollPane != null) {
+            tablePanel.remove(scrollPane);
+            scrollPane = null;
+            currentTable = null;
+        }
+        if (customerNameLabel != null) {
+            containerPanel.remove(customerNameLabel);
+            customerNameLabel = null;
+        }
+        documentID.setText("");
+        tablePanel.revalidate();
+        tablePanel.repaint();
+        containerPanel.revalidate();
+        containerPanel.repaint();
     }
 
 }
