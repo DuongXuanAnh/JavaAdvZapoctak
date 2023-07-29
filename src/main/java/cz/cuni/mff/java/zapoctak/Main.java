@@ -13,25 +13,32 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * The main class that starts the Book Manager application.
+ */
 public class Main {
 
+    /**
+     * The main method that launches the Book Manager application.
+     *
+     * @param args Command-line arguments (not used).
+     */
     public static void main(String[] args) {
         JFrame frame = new JFrame("Book Manager");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Create the menu panel with buttons to switch between different panels
         JPanel menuPanel = new JPanel(new GridLayout(1, 0));
-        JButton authorButton = new JButton("Přidat autora");
-        JButton bookButton = new JButton("Přidat knihu");
-        JButton customerButton = new JButton("Přidat zákazníka");
-        JButton documentButton = new JButton("Objednávka");
-        JButton booksButton = new JButton("Knihy");
-        JButton returnBookButton = new JButton("Vrátit knihu");
+        JButton authorButton = new JButton("Add Author");
+        JButton bookButton = new JButton("Add Book");
+        JButton customerButton = new JButton("Add Customer");
+        JButton documentButton = new JButton("Create Document");
+        JButton booksButton = new JButton("Books");
+        JButton returnBookButton = new JButton("Return Book");
 
         // Create the card panel to hold the different panels
         JPanel cardPanel = new JPanel(new CardLayout());
         JPanel booksPanel = new Books();
-//        JPanel booksPanel = new ReturnBook();
 
         cardPanel.add(booksPanel, "books");
 
@@ -95,9 +102,13 @@ public class Main {
         frame.pack();
         frame.setVisible(true);
         clearFile();
-
     }
-    public static void clearFile(){
+
+    /**
+     * Clears the "bookIDs.txt" file when the application is shut down.
+     * This method is called from the main method using a shutdown hook.
+     */
+    public static void clearFile() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 Files.deleteIfExists(Paths.get("bookIDs.txt"));

@@ -8,12 +8,21 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * This class provides configuration settings and methods for database connectivity.
+ */
 public class Config {
     private static final String DATABASE_URL = "jdbc:mysql://localhost:3306/java_winter";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "";
     private static final Logger LOGGER = Logger.getLogger(Config.class.getName());
 
+    /**
+     * Retrieves a database connection using the specified settings.
+     *
+     * @return A Connection object representing the database connection.
+     * @throws RuntimeException If a database connection cannot be established.
+     */
     public static Connection getConnection() {
         try {
             return DriverManager.getConnection(DATABASE_URL, USERNAME, PASSWORD);
@@ -21,7 +30,7 @@ public class Config {
             LOGGER.log(Level.SEVERE, "Cannot establish database connection", ex);
             Notification.showErrorMessage("Cannot establish database connection");
             System.exit(0);
-            return null;
+            throw new RuntimeException("Cannot establish database connection", ex);
         }
     }
 }

@@ -3,16 +3,17 @@ package cz.cuni.mff.java.zapoctak.global;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+
 /**
- * Tato třída poskytuje pomocnou metodu pro vytváření titulkovaných okrajů s konkrétním stylem.
+ * This class provides a utility method for creating titled borders with a specific style.
  */
 public class TitleBorder {
     /**
-     * Vytvoří titulkovaný okraj s daným názvem.
+     * Creates a titled border with the specified title.
      *
-     * @param title název, který se má zobrazit na okraji
-     * @return TitledBorder s určeným názvem, černou linkovou hranou, vycentrovaným textem názvu
-     * a fontem Arial Bold 20pt
+     * @param title The title to be displayed on the border.
+     * @return A TitledBorder with the given title, a black line border, centered title text,
+     * and Arial Bold 20pt font.
      */
     public static TitledBorder create(String title){
         TitledBorder titledBorder = BorderFactory.createTitledBorder(
