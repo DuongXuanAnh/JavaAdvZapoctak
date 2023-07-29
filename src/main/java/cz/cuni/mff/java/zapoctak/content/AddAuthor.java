@@ -15,10 +15,17 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * A class representing a panel for adding a new author to the database.
+ * This panel consists of fields for author's name and nationality, as well as a submit button.
+ */
 public class AddAuthor extends JPanel {
     private final JTextField nameField;
     private final JComboBox<String> nationalComboBox;
 
+    /**
+     * Constructs the AddAuthor panel with necessary fields and setup.
+     */
     public AddAuthor() {
         this.setBorder(TitleBorder.create("Přidat autora"));
         nameField = new JTextField(20);
@@ -27,6 +34,9 @@ public class AddAuthor extends JPanel {
         setupSubmitButton();
     }
 
+    /**
+     * Setups the layout for the panel.
+     */
     private void setupLayout() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = getGridBagConstraints();
@@ -35,6 +45,11 @@ public class AddAuthor extends JPanel {
         addNationalLabelAndComboBox(gbc);
     }
 
+    /**
+     * Creates and returns a GridBagConstraints object with specified settings.
+     *
+     * @return A GridBagConstraints object with specific insets and horizontal fill.
+     */
     private GridBagConstraints getGridBagConstraints() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -42,6 +57,11 @@ public class AddAuthor extends JPanel {
         return gbc;
     }
 
+    /**
+     * Adds the label and text field for the author's name to the panel using the given GridBagConstraints.
+     *
+     * @param gbc The GridBagConstraints used to specify the position and size of the components.
+     */
     private void addNameLabelAndField(GridBagConstraints gbc) {
         JLabel nameLabel = new JLabel("Jméno Autora");
         gbc.gridx = 0;
@@ -52,6 +72,11 @@ public class AddAuthor extends JPanel {
         add(nameField, gbc);
     }
 
+    /**
+     * Adds the label and combo box for the author's nationality to the panel using the given GridBagConstraints.
+     *
+     * @param gbc The GridBagConstraints used to specify the position and size of the components.
+     */
     private void addNationalLabelAndComboBox(GridBagConstraints gbc) {
         JLabel nationalLabel = new JLabel("Národnost");
         gbc.gridx = 0;
@@ -62,6 +87,9 @@ public class AddAuthor extends JPanel {
         add(nationalComboBox, gbc);
     }
 
+    /**
+     * Sets up the submit button for the form, with associated action listeners for adding the author.
+     */
     private void setupSubmitButton() {
         JButton submitButton = new JButton("Přidat autora");
         GridBagConstraints gbc = getGridBagConstraints();
@@ -74,6 +102,11 @@ public class AddAuthor extends JPanel {
         submitButton.addActionListener(this::addAuthorAction);
     }
 
+    /**
+     * Takes an ActionEvent from the submit button and attempts to add the author to the database.
+     *
+     * @param e The ActionEvent that was triggered by the submit button.
+     */
     private void addAuthorAction(ActionEvent e) {
         String name = nameField.getText();
         String national = (String) nationalComboBox.getSelectedItem();
@@ -83,6 +116,13 @@ public class AddAuthor extends JPanel {
         }
     }
 
+    /**
+     * Validates the author's data. Returns false if the name or nationality is empty, otherwise returns true.
+     *
+     * @param name     The name of the author.
+     * @param national The nationality of the author.
+     * @return True if data is valid, otherwise false.
+     */
     private boolean checkAuthorData(String name, String national) {
         if (name.isEmpty()) {
             Notification.showErrorMessage("Jméno autora nesmí být prázdné");
@@ -96,6 +136,12 @@ public class AddAuthor extends JPanel {
         return true;
     }
 
+    /**
+     * Inserts the author's data into the database.
+     *
+     * @param name     The name of the author.
+     * @param national The nationality of the author.
+     */
     private void insertAuthorToDb(String name, String national) {
         try (Connection conn = Config.getConnection();
              PreparedStatement checkStatement = conn.prepareStatement("SELECT id, jmeno FROM autor WHERE jmeno = ?");
@@ -120,6 +166,11 @@ public class AddAuthor extends JPanel {
         }
     }
 
+    /**
+     * Retrieves a list of available countries for the nationality selection.
+     *
+     * @return An array of available countries.
+     */
     private String[] getAvailableCountries() {
         Locale[] locales = Locale.getAvailableLocales();
         Set<String> countries = new TreeSet<>();
@@ -129,6 +180,9 @@ public class AddAuthor extends JPanel {
         return countries.toArray(new String[0]);
     }
 
+    /**
+     * Resets the form to its initial state.
+     */
     private void resetForm() {
         nameField.setText("");
         nationalComboBox.setSelectedIndex(0);

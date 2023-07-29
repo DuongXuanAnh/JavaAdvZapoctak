@@ -13,9 +13,6 @@ import java.util.*;
 
 /**
  * This class represents a panel for adding a new book.
- *
- * @author Duong Xuan Anh
- * @version 1.0
  */
 
 public class AddBook extends JPanel {
