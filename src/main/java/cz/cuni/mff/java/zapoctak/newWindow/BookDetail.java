@@ -28,6 +28,12 @@ public class BookDetail extends JPanel {
     private final int bookId;
     private Books book;
 
+    /**
+     * Constructs a new BookDetail panel for editing book information.
+     *
+     * @param bookId The ID of the book to be edited.
+     * @param book   The parent Books panel to which this BookDetail belongs.
+     */
     public BookDetail(int bookId, Books book) {
         this.bookId = bookId;
         titleTextField = new JTextField(50);
@@ -46,7 +52,11 @@ public class BookDetail extends JPanel {
         loadDataFromDatabase(bookId);
 
     }
-
+    /**
+     * This method populates a given JComboBox with author names retrieved from the database.
+     *
+     * @param authorComboBox The JComboBox to be filled with author names.
+     */
     private void fillComboBoxWithAuthors(JComboBox<String> authorComboBox) {
         ArrayList<String> authors = loadAuthorsFromDB();
         for (String author : authors) {
@@ -54,6 +64,11 @@ public class BookDetail extends JPanel {
         }
     }
 
+    /**
+     * This class provides methods to interact with the database to retrieve a list of authors.
+     * It establishes a connection to the database using the {@link Config} class and executes
+     * an SQL query to fetch author names from the "autor" table.
+     */
     private ArrayList<String> loadAuthorsFromDB() {
         ArrayList<String> authors = new ArrayList<>();
         try (Connection conn = Config.getConnection();
@@ -69,6 +84,9 @@ public class BookDetail extends JPanel {
         return authors;
     }
 
+    /**
+        * setupLayout
+     */
     private void setupLayout() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = getGridBagConstraints();
@@ -83,7 +101,11 @@ public class BookDetail extends JPanel {
         addConfirmButton(gbc);
         addCancelButton(gbc);
     }
-
+    /**
+     * Returns a new instance of GridBagConstraints with predefined settings for grid layout.
+     *
+     * @return The GridBagConstraints with predefined settings.
+     */
     private GridBagConstraints getGridBagConstraints() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -91,6 +113,11 @@ public class BookDetail extends JPanel {
         return gbc;
     }
 
+    /**
+     * Adds a label "Název" (Title) and a JTextField for entering the title of the book to the GUI panel at the specified GridBagConstraints position.
+     *
+     * @param gbc The GridBagConstraints specifying the position for the label and JTextField.
+     */
     private void addTitleLabelAndField(GridBagConstraints gbc) {
         JLabel nameLabel = new JLabel("Název");
         gbc.gridx = 0;
@@ -101,6 +128,11 @@ public class BookDetail extends JPanel {
         add(titleTextField, gbc);
     }
 
+    /**
+     * Adds a label "Žánr" (Genre) and a JComboBox for selecting the genre of the book to the GUI panel at the specified GridBagConstraints position.
+     *
+     * @param gbc The GridBagConstraints specifying the position for the label and JComboBox.
+     */
     private void addGenresLabelAndComboBox(GridBagConstraints gbc) {
         JLabel nameLabel = new JLabel("Žánr");
         gbc.gridx = 0;
@@ -114,6 +146,11 @@ public class BookDetail extends JPanel {
         genresComboBox = new JComboBox<>(zanry);
         add(genresComboBox, gbc);
     }
+    /**
+     * Adds a label "Rok vydání" and a JSpinner for entering the year of publication to the GUI panel at the specified GridBagConstraints position.
+     *
+     * @param gbc The GridBagConstraints specifying the position for the label and JSpinner.
+     */
     private void addYearLabelAndField(GridBagConstraints gbc){
         JLabel yearLabel = new JLabel("Rok vydání");
         gbc.gridx = 0;
@@ -123,6 +160,11 @@ public class BookDetail extends JPanel {
         gbc.gridx = 1;
         add(yearField, gbc);
     }
+    /**
+     * Adds a label "Cena (Kč)" and a JTextField for entering the price of the book to the GUI panel at the specified GridBagConstraints position.
+     *
+     * @param gbc The GridBagConstraints specifying the position for the label and JTextField.
+     */
     private void addPriceLabelAndField(GridBagConstraints gbc) {
         JLabel priceLabel = new JLabel("Cena (Kč)");
         gbc.gridx = 0;
@@ -132,7 +174,11 @@ public class BookDetail extends JPanel {
         gbc.gridx = 1;
         add(priceField, gbc);
     }
-
+    /**
+     * Adds a label "Počet kusů" and a JSpinner for selecting the quantity of books to the GUI panel at the specified GridBagConstraints position.
+     *
+     * @param gbc The GridBagConstraints specifying the position for the label and JSpinner.
+     */
     private void addQuantityLabelAndSpinner(GridBagConstraints gbc) {
         JLabel quantityLabel = new JLabel("Počet kusů");
         gbc.gridx = 0;
@@ -142,6 +188,11 @@ public class BookDetail extends JPanel {
         gbc.gridx = 1;
         add(quantitySpinner, gbc);
     }
+    /**
+     * Adds a label "Popis:" and a JTextArea for entering book description to the GUI panel at the specified GridBagConstraints position.
+     *
+     * @param gbc The GridBagConstraints specifying the position for the label and JTextArea.
+     */
     private void addDescriptionLabelAndTextArea(GridBagConstraints gbc) {
         JLabel descriptionLabel = new JLabel("Popis:");
         gbc.gridx = 0;
@@ -150,20 +201,24 @@ public class BookDetail extends JPanel {
         gbc.gridx = 1;
         add(descriptionArea, gbc);
     }
-
+    /**
+     * Adds a label "Autor" and a JComboBox for selecting authors to the GUI panel at the specified GridBagConstraints position.
+     *
+     * @param gbc The GridBagConstraints specifying the position for the label and JComboBox.
+     */
     private void addAuthorLabelAndComboBox(GridBagConstraints gbc) {
         JLabel nameLabel = new JLabel("Autor");
         gbc.gridx = 0;
         gbc.gridy = 7;
         add(nameLabel, gbc);
-
-
-//        gbc.gridx = 1;
-//        authorComboBoxes.add(authorComboBox);
-//        add(authorComboBox, gbc);
-
     }
 
+    /**
+     * Adds an "Add Author" button to the GUI panel at the specified GridBagConstraints position.
+     * This button allows the user to add a new author ComboBox to the GUI when clicked.
+     *
+     * @param gbc The GridBagConstraints specifying the position for the "Add Author" button.
+     */
     private void addAuthorButton(GridBagConstraints gbc){
         JButton addAuthorButton = new JButton("Přidat autora");
         gbc.gridx = 1;
@@ -174,7 +229,11 @@ public class BookDetail extends JPanel {
             addNewAuthorCombobox(gbc);
         });
     }
-
+    /**
+     * Loads data for a specific book from the database and populates the corresponding input fields.
+     *
+     * @param bookId The ID of the book to load data for.
+     */
     private void loadDataFromDatabase(int bookId) {
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("SELECT * FROM kniha WHERE id = ?")) {
@@ -230,6 +289,13 @@ public class BookDetail extends JPanel {
             ex.printStackTrace();
         }
     }
+    /**
+     * Inserts line breaks into the given text at regular intervals to fit within the specified line length.
+     *
+     * @param text       The text to insert line breaks into.
+     * @param lineLength The maximum length of each line after inserting line breaks.
+     * @return The modified text with line breaks inserted.
+     */
     private String insertLineBreaks(String text, int lineLength) {
         StringBuilder sb = new StringBuilder(text);
         int offset = 0;
@@ -241,7 +307,12 @@ public class BookDetail extends JPanel {
         }
         return sb.toString();
     }
-
+    /**
+     * Loads the list of authors associated with a book from the database.
+     *
+     * @param bookId The ID of the book for which to retrieve the authors.
+     * @return An ArrayList containing the names of authors associated with the book.
+     */
     private ArrayList<String> loadAuthorsForBook(int bookId) {
         ArrayList<String> authors = new ArrayList<>();
         try (Connection conn = Config.getConnection();
@@ -257,7 +328,12 @@ public class BookDetail extends JPanel {
         }
         return authors;
     }
-
+    /**
+     * Removes an author combobox and its associated remove button from the panel.
+     *
+     * @param comboBoxToRemove The author combobox to remove from the panel.
+     * @param buttonToRemove   The remove button associated with the author combobox.
+     */
     private void removeAuthorComboBox(JComboBox<String> comboBoxToRemove, JButton buttonToRemove) {
         remove(comboBoxToRemove);
         remove(buttonToRemove);
@@ -266,6 +342,13 @@ public class BookDetail extends JPanel {
         repaint();
     }
 
+    /**
+     * Adds a new author combobox to the panel with the specified GridBagConstraints.
+     * The combobox is filled with authors, and a remove button is added next to it.
+     * When the remove button is clicked, the associated author combobox is removed from the panel.
+     *
+     * @param gbc The GridBagConstraints to use for placing the combobox and remove button in the panel.
+     */
     private void addNewAuthorCombobox(GridBagConstraints gbc) {
 
         JComboBox<String> newAuthorComboBox = new JComboBox<>();
@@ -287,7 +370,12 @@ public class BookDetail extends JPanel {
         revalidate();
         repaint();
     }
-
+    /**
+     * Adds a confirm button to the panel with the specified GridBagConstraints.
+     * When the button is clicked, the method calls the confirmBookUpdate() method to save the changes to the book.
+     *
+     * @param gbc The GridBagConstraints to use for placing the button in the panel.
+     */
     private void addConfirmButton(GridBagConstraints gbc){
         JButton addConfirmButton = new JButton("Uložit změny");
         gbc.gridx = 1;
@@ -300,7 +388,11 @@ public class BookDetail extends JPanel {
 
         });
     }
-
+    /**
+     * Confirms the update of the book with the provided information and saves the changes to the database.
+     * If any required field is empty or there are duplicate authors, an error notification is shown.
+     * Otherwise, the book's information is updated in the database, and the number of authors is printed to the console.
+     */
     public void confirmBookUpdate(){
         String bookName = titleTextField.getText();
         Double bookPrice = (Double) priceField.getValue();
@@ -327,7 +419,18 @@ public class BookDetail extends JPanel {
 
         System.out.println(bookAuthors.size());
     }
-
+    /**
+     * Updates the book in the database with the provided information.
+     *
+     * @param bookId The ID of the book to be updated.
+     * @param name The name of the book.
+     * @param authorNames An ArrayList containing the names of the authors associated with the book.
+     * @param genre The genre of the book.
+     * @param price The price of the book.
+     * @param year The year of publication of the book.
+     * @param quantity The quantity of the book in stock.
+     * @param description The description of the book.
+     */
     private void updateBookInDB(int bookId, String name, ArrayList<String> authorNames, String genre, double price, int year, int quantity, String description) {
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("UPDATE kniha SET nazev=?, zanr=?, cena=?, rok_vydani=?, amount=?, popis=? WHERE id=?")) {
@@ -360,7 +463,12 @@ public class BookDetail extends JPanel {
             ex.printStackTrace();
         }
     }
-
+    /**
+     * Updates the authors associated with a book in the database.
+     *
+     * @param bookId The ID of the book whose authors are to be updated.
+     * @param authorNames An ArrayList containing the names of the authors to be associated with the book.
+     */
     private void updateAuthorsForBook(int bookId, ArrayList<String> authorNames) {
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("DELETE FROM kniha_autor WHERE id_kniha=?")) {
@@ -378,7 +486,12 @@ public class BookDetail extends JPanel {
             ex.printStackTrace();
         }
     }
-
+    /**
+     * Inserts an author for a book in the database.
+     *
+     * @param bookId The ID of the book to associate with the author.
+     * @param authorName The name of the author to be inserted.
+     */
     private void insertAuthorForBook(int bookId, String authorName) {
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("INSERT INTO kniha_autor (id_kniha, id_autor) VALUES (?, (SELECT id FROM autor WHERE jmeno=?))")) {
@@ -391,7 +504,12 @@ public class BookDetail extends JPanel {
             ex.printStackTrace();
         }
     }
-
+    /**
+     * Adds a "Cancel" button to the panel at the specified GridBagConstraints.
+     * When clicked, the "Cancel" button will close the window containing the panel.
+     *
+     * @param gbc The GridBagConstraints specifying the position of the "Cancel" button.
+     */
     private void addCancelButton(GridBagConstraints gbc){
         JButton addCancelButton = new JButton("Cancel");
         gbc.gridx = 2;
@@ -403,7 +521,12 @@ public class BookDetail extends JPanel {
             frame.dispose();
         });
     }
-
+    /**
+     * Checks whether there are any duplicate authors selected in the provided list of author ComboBoxes.
+     *
+     * @param authorComboBoxes An ArrayList of JComboBoxes containing author names.
+     * @return true if there are duplicate authors selected, false otherwise.
+     */
     private boolean hasDuplicateAuthors(ArrayList<JComboBox<String>> authorComboBoxes) {
         Set<String> authorNames = new HashSet<>();
 
