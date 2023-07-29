@@ -22,7 +22,9 @@ import java.util.Date;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
-
+/**
+ * The AddDocument class represents a JPanel that allows users to add a new document.
+ */
 public class AddDocument extends JPanel {
 
     JComboBox<String> typeComboBox;
@@ -33,7 +35,11 @@ public class AddDocument extends JPanel {
 
     ArrayList<JSpinner> spinners = new ArrayList<>();
     JLabel totalPriceDisplayed;
-
+    /**
+     * Constructs a new AddDocument panel, initializing all required components
+     * for adding a document and setting up the layout. The panel allows the user
+     * to create an order either for borrowing or purchasing books.
+     */
     public AddDocument(){
         this.setBorder(TitleBorder.create("Vytvořit objednávku"));
         typeComboBox = new JComboBox<>(new String[]{"Půjčit", "Koupit"});
@@ -43,7 +49,10 @@ public class AddDocument extends JPanel {
         setupLayout();
         setupSubmitButton();
     }
-
+    /**
+     * Initializes the "Přidat doklad" (Add Document) button and configures its layout and action listener.
+     * When the button is pressed, it calls the {@code submitDocument} method to handle the submission of the document.
+     */
     private void setupSubmitButton() {
         JButton submitDocumentButton = new JButton("Přidat doklad");
         GridBagConstraints gbc = getGridBagConstraints();
@@ -58,6 +67,16 @@ public class AddDocument extends JPanel {
         });
     }
 
+    /**
+     * Submits the document by performing a series of validations and operations.
+     * It calculates the total price, validates the selected date and option, formats the date,
+     * and inserts the document along with its associated items and customer information.
+     *
+     * <p>The method also handles various error cases such as empty cart, invalid date, and non-numeric customer ID,
+     * providing appropriate error notifications to the user.</p>
+     *
+     * <p>If the document is successfully created, it resets the fields and notifies the user of success.</p>
+     */
     private void submitDocument() {
         double totalPrice = calculateTotalPrice();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -104,7 +123,11 @@ public class AddDocument extends JPanel {
     }
 
 
-
+    /**
+     * Configures the layout of the panel, setting it to {@link GridBagLayout}.
+     * Calls other methods to add components like combo boxes, date choosers, labels, and spinners,
+     * and sets their positions within the layout using {@link GridBagConstraints}.
+     */
     private void setupLayout() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = getGridBagConstraints();
@@ -116,6 +139,13 @@ public class AddDocument extends JPanel {
         displayTotalPrice(gbc);
     }
 
+    /**
+     * Adds the total price label and the total price value to the layout.
+     * It utilizes {@link GridBagConstraints} to set the grid positions for both components
+     * and triggers an update to the displayed total price.
+     *
+     * @param gbc the {@link GridBagConstraints} object used to set the layout constraints
+     */
     private void displayTotalPrice(GridBagConstraints gbc) {
         JLabel totalPriceLabel = new JLabel("Celková cena:");
         gbc.gridx = 0;
@@ -127,10 +157,18 @@ public class AddDocument extends JPanel {
         add(totalPriceDisplayed, gbc);
     }
 
-    private void showChosenBook(GridBagConstraints gbc, BookData book, int posisionIndex){
+    /**
+     * Displays the chosen book in the layout with its title, price, and a spinner to select the quantity.
+     * The method also adds a button to remove the chosen book from the order.
+     *
+     * @param gbc           the {@link GridBagConstraints} object used to set the layout constraints
+     * @param book          the {@link BookData} object containing the information of the selected book
+     * @param positionIndex the position index in the layout for displaying the chosen book
+     */
+    private void showChosenBook(GridBagConstraints gbc, BookData book, int positionIndex){
         JLabel chosenBook = new JLabel("* " + book.getTitle() + " - " + book.getPrice() + "Kč");
         gbc.gridx = 0;
-        gbc.gridy = 5 + posisionIndex;
+        gbc.gridy = 5 + positionIndex;
         add(chosenBook, gbc);
 
         SpinnerModel model = new SpinnerNumberModel(1, 1, book.getAmount(), 1);
@@ -138,7 +176,7 @@ public class AddDocument extends JPanel {
         spinners.add(spinner);
         spinner.addChangeListener(e -> updateTotalPrice());
         gbc.gridx = 1;
-        gbc.gridy = 5 + posisionIndex;
+        gbc.gridy = 5 + positionIndex;
         add(spinner, gbc);
 
         JButton removeOrderBookButton = new JButton("X");
@@ -146,10 +184,20 @@ public class AddDocument extends JPanel {
             removeOrderBook(book, chosenBook, spinner, removeOrderBookButton);
         });
         gbc.gridx = 2;
-        gbc.gridy = 5 + posisionIndex;
+        gbc.gridy = 5 + positionIndex;
         add(removeOrderBookButton, gbc);
     }
 
+    /**
+     * Removes the chosen book from the order. It takes care of updating the UI by removing the associated components,
+     * revalidating and repainting the container, and updating the total price.
+     * It also deletes the book's ID from a file.
+     *
+     * @param book                the {@link BookData} object containing the information of the book to be removed
+     * @param chosenBook          the {@link JLabel} displaying the chosen book
+     * @param spinner             the {@link JSpinner} for selecting the book's quantity
+     * @param removeOrderBookButton the {@link JButton} for removing the chosen book
+     */
     private void removeOrderBook(BookData book, JLabel chosenBook, JSpinner spinner, JButton removeOrderBookButton) {
         chosenBooks.remove(book);
         spinners.remove(spinner);
@@ -162,6 +210,12 @@ public class AddDocument extends JPanel {
         deleteBookIDFromFile(book.getId());
     }
 
+    /**
+     * Deletes the specified book ID from the 'bookIDs.txt' file.
+     * It does this by creating a temporary file that excludes the book ID and then replacing the original file.
+     *
+     * @param bookId the ID of the book to be deleted from the file
+     */
     private void deleteBookIDFromFile(int bookId) {
         try {
             Path filePath = Paths.get("bookIDs.txt");
@@ -181,6 +235,13 @@ public class AddDocument extends JPanel {
         }
     }
 
+    /**
+     * Adds the label for chosen books to the layout and then reads and displays the chosen books from a file.
+     * If the list of chosen books is empty, it prints a message to the console.
+     * Otherwise, it calls the {@link #showChosenBook} method for each book, passing the correct position index.
+     *
+     * @param gbc the {@link GridBagConstraints} object used to set the layout constraints
+     */
     private void addChosenBookAndAmountSpinner(GridBagConstraints gbc) {
         JLabel ChosenBookTitleLabel = new JLabel("Vybrané knihy:");
         gbc.gridx = 0;
@@ -200,6 +261,11 @@ public class AddDocument extends JPanel {
         }
     }
 
+    /**
+     * Adds a customer ID label and corresponding text field to the layout.
+     *
+     * @param gbc the {@link GridBagConstraints} object used to set the layout constraints
+     */
     private void addCustomerIdAndLabel(GridBagConstraints gbc) {
         JLabel customerIDLabel = new JLabel("ID zákaznika:");
         gbc.gridx = 0;
@@ -210,6 +276,11 @@ public class AddDocument extends JPanel {
         add(customerIdField, gbc);
     }
 
+    /**
+     * Adds a date label and corresponding date chooser component to the layout.
+     *
+     * @param gbc the {@link GridBagConstraints} object used to set the layout constraints
+     */
     private void addDateAndDateChooser(GridBagConstraints gbc) {
         JLabel dateLabel = new JLabel("Datum vrácení:");
         gbc.gridx = 0;
@@ -218,6 +289,13 @@ public class AddDocument extends JPanel {
         gbc.gridx = 1;
         add(dateChooser, gbc);
     }
+
+    /**
+     * Adds a type label and corresponding combo box component to the layout.
+     * Sets an action listener on the combo box to toggle the visibility of the date chooser based on the selected option.
+     *
+     * @param gbc the {@link GridBagConstraints} object used to set the layout constraints
+     */
     private void addTypeAndComboBox(GridBagConstraints gbc) {
         JLabel typeLabel = new JLabel("Typ:");
         gbc.gridx = 0;
@@ -231,6 +309,12 @@ public class AddDocument extends JPanel {
             dateChooser.setVisible(!selectedOption.equals("Koupit"));
         });
     }
+
+    /**
+     * Creates and returns a {@link GridBagConstraints} object with initial configurations.
+     *
+     * @return a {@link GridBagConstraints} object with set insets and fill
+     */
     private GridBagConstraints getGridBagConstraints() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -238,6 +322,10 @@ public class AddDocument extends JPanel {
         return gbc;
     }
 
+    /**
+     * Reads the chosen book IDs from the 'bookIDs.txt' file and adds the corresponding {@link BookData} objects to the chosenBooks list.
+     * Retrieves the book details from the database using the {@link #getBookTitleAndPriceFromDB} method.
+     */
     public void readChosenBookFromFile() {
         try {
             File file = new File("bookIDs.txt");
@@ -253,6 +341,17 @@ public class AddDocument extends JPanel {
         }
     }
 
+    /**
+     * Retrieves book details such as title, price, amount, and ID from the database for the given book ID.
+     * It queries the database and populates a {@link BookData} object with the retrieved information.
+     *
+     * If no data is found for the given book ID, an error message will be displayed using {@link Notification#showErrorMessage}.
+     *
+     * @param bookId The ID of the book to retrieve details for.
+     * @return A {@link BookData} object containing the title, price, amount, and ID of the book.
+     *         Returns an empty {@link BookData} object if no data is found for the given book ID.
+     * @throws SQLException If there is an issue querying the database. Errors are logged and displayed to the user.
+     */
     public BookData getBookTitleAndPriceFromDB(int bookId){
         BookData bookData = new BookData();
         try (Connection conn = Config.getConnection();
@@ -279,6 +378,12 @@ public class AddDocument extends JPanel {
         return bookData;
     }
 
+    /**
+     * Calculates the total price of all chosen books. The method iterates through the list of chosen books
+     * and multiplies each book's price by the corresponding quantity selected by the user in the spinner.
+     *
+     * @return The calculated total price for all chosen books.
+     */
     public double calculateTotalPrice() {
         double totalPrice = 0;
         for (int i = 0; i < chosenBooks.size(); i++) {
@@ -289,11 +394,28 @@ public class AddDocument extends JPanel {
         return totalPrice;
     }
 
+    /**
+     * Updates the total price displayed on the user interface. It calculates the total price by calling
+     * {@link #calculateTotalPrice()} and then sets the text on the label, or any other UI component used to
+     * display the total price, with the calculated value and currency symbol.
+     */
     private void updateTotalPrice() {
         double totalPrice = calculateTotalPrice();
         totalPriceDisplayed.setText(totalPrice + " Kč");
     }
 
+    /**
+     * Inserts a new document into the "doklad" table with the specified total price and optional rental date.
+     * This method constructs the appropriate SQL statement based on whether a date is provided for the rental
+     * and executes the statement, returning the generated document ID if the insertion is successful.
+     *
+     * @param totalPrice The total price of the document to be inserted.
+     * @param dateRentTo An optional date indicating the rental end date for the document. If null, only the total price is inserted.
+     * @return The generated document ID if the insertion is successful, or -1 if an error occurs.
+     *
+     * @throws SQLException If there is a problem executing the SQL statement, such as constraint violations,
+     *                      problems with the connection to the database, or other SQL-related issues.
+     */
     private int insertDocument(double totalPrice, String dateRentTo) {
         String sql_doklad = (dateRentTo == null) ?
                 "INSERT INTO doklad (totalPrice) VALUES (?)" :
@@ -321,6 +443,17 @@ public class AddDocument extends JPanel {
         return ducumentId;
     }
 
+    /**
+     * Inserts items into the "doklad_kniha" table and updates the "kniha" table for the specified document.
+     * This method iterates through the chosen books, updating their amounts in the "kniha" table and
+     * inserting the relationship between the document and the books into the "doklad_kniha" table.
+     * After performing these operations, it resets the panel using the "resetPanel" method.
+     *
+     * @param documentId The unique identifier of the document for which the items are to be inserted.
+     *
+     * @throws SQLException If there is a problem executing the SQL statements, such as constraint violations,
+     *                      problems with the connection to the database, or other SQL-related issues.
+     */
     private void insertDocumentItems(int documentId) {
         for (int i = 0; i < chosenBooks.size(); i++) {
             BookData book = chosenBooks.get(i);
@@ -350,6 +483,16 @@ public class AddDocument extends JPanel {
        resetPanel();
     }
 
+    /**
+     * Inserts a record into the "doklad_zakaznik" table, associating a specific document with a customer.
+     * This method is used to create a relationship between a document and a customer in the database.
+     *
+     * @param ducumentId The unique identifier of the document to be associated with the customer.
+     * @param customerID The unique identifier of the customer to be associated with the document.
+     *
+     * @throws SQLException If there is a problem executing the SQL statement, such as a constraint violation
+     *                      or a problem with the connection to the database.
+     */
     private void insertDocumentCustomer(int ducumentId, int customerID) {
         try (PreparedStatement statement_doklad_zakaznik = Config.getConnection().prepareStatement("INSERT INTO doklad_zakaznik (id_doklad, id_zakaznik) VALUES (?, ?)")) {
             statement_doklad_zakaznik.setInt(1, ducumentId);
@@ -361,6 +504,10 @@ public class AddDocument extends JPanel {
         }
     }
 
+    /**
+     * Resets all fields, clearing the chosen books, customer ID, date, and emptying the 'bookIDs.txt' file.
+     * Updates the total price, revalidates, and repaints the container.
+     */
     private void resetFields() {
         // Clear books
         for (int i = 0; i < chosenBooks.size(); i++) {
@@ -386,6 +533,10 @@ public class AddDocument extends JPanel {
         repaint();
 
     }
+
+    /**
+     * Empties the contents of the 'bookIDs.txt' file.
+     */
     private void deleteFileContents() {
 
         try {
@@ -399,6 +550,9 @@ public class AddDocument extends JPanel {
 
     }
 
+    /**
+     * This method resets the form.
+     */
     void resetPanel(){
         deleteFileContents();
         AddDocument newAddDocument = new AddDocument();
