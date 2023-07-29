@@ -20,6 +20,12 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * The {@code Books} class represents a panel within the application that displays
+ * and manages information related to books. This class includes functionality to
+ * view and filter books, select authors from a combo box, manage the layout and
+ * content of a table displaying book information, and interact with other components for managing book data.
+ */
 public class Books extends JPanel {
 
     private final JTextField titleField;
@@ -46,7 +52,15 @@ public class Books extends JPanel {
         setupListeners();
         updateTableModel();
     }
-
+    /**
+     * Sets up the layout for the panel, configuring the appearance and placement of
+     * components within the panel using a {@code GridBagLayout}. The layout consists
+     * of a title label and field, an author name label and combo box, and a table to
+     * display the books.
+     *
+     * <p>The placement of these components is defined using {@code GridBagConstraints},
+     * which is obtained from the {@code getGridBagConstraints()} method.
+     */
     private void setupLayout() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = getGridBagConstraints();
@@ -55,13 +69,26 @@ public class Books extends JPanel {
         addNameLabelAndField(gbc);
         addTable(gbc);
     }
-
+    /**
+     * Initializes the listeners for various interactive components within the panel.
+     * This includes setting up listeners for changes to the title field, author combo box,
+     * and handling double-click events on the table.
+     *
+     * <p>The specific listeners are configured in the {@code setupTitleFieldListener},
+     * {@code setupAuthorComboBoxListener}, and {@code setupDoubleClickListener} methods.
+     */
     private void setupListeners() {
         setupTitleFieldListener();
         setupAuthorComboBoxListener();
         setupDoubleClickListener();
     }
-
+    /**
+     * Returns a configured {@code GridBagConstraints} object that defines constraints
+     * for layout components. The returned constraints have horizontal filling
+     * and consistent insets, which determine the spacing between neighboring components.
+     *
+     * @return the {@code GridBagConstraints} object with set parameters for layout
+     */
     private GridBagConstraints getGridBagConstraints() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -69,6 +96,13 @@ public class Books extends JPanel {
         return gbc;
     }
 
+    /**
+     * Adds a title label and text field for entering the title of a book to the panel.
+     * The method takes {@code GridBagConstraints} as a parameter to specify the placement
+     * and appearance of the label and text field within the layout.
+     *
+     * @param gbc the {@code GridBagConstraints} object that defines layout constraints
+     */
     private void addTitleLabelAndField(GridBagConstraints gbc) {
         JLabel authorLabel = new JLabel("Název knihy: ");
         gbc.gridx = 0;
@@ -78,6 +112,13 @@ public class Books extends JPanel {
         gbc.gridx = 1;
         add(titleField, gbc);
     }
+    /**
+     * Adds a name label and a combo box for selecting the author of a book to the panel.
+     * The method takes {@code GridBagConstraints} as a parameter to specify the placement
+     * and appearance of the label and combo box within the layout.
+     *
+     * @param gbc the {@code GridBagConstraints} object that defines layout constraints
+     */
     private void addNameLabelAndField(GridBagConstraints gbc) {
         JLabel authorLabel = new JLabel("Autor: ");
         gbc.gridx = 0;
@@ -87,7 +128,13 @@ public class Books extends JPanel {
         gbc.gridx = 1;
         add(authorComboBox, gbc);
     }
-
+    /**
+     * Creates a {@code JTable} for displaying books with columns for ID, title, number of copies, and price.
+     * The table's selection model is configured to listen for row selection events, providing the ID of the selected book.
+     * The table does not allow direct editing of the cells by the user.
+     *
+     * @return the newly created {@code JTable} configured with the appropriate columns and behavior
+     */
     private JTable createTable() {
         String[] columnNames = {"ID", "Název", "Počet kusů", "Cena"};
         tableModel.setColumnIdentifiers(columnNames);
@@ -108,7 +155,10 @@ public class Books extends JPanel {
 
         return table;
     }
-
+    /**
+     * Updates the table model by querying the database for books, filtered by title and author if specified.
+     * The data from the result set is extracted and added as rows to the table model.
+     */
     public void updateTableModel() {
         String titleQuery = titleField.getText().trim();
         Author selectedAuthor = (Author) authorComboBox.getSelectedItem();
@@ -147,7 +197,12 @@ public class Books extends JPanel {
         revalidate();
         repaint();
     }
-
+    /**
+     * Adds a table with book details to the panel, displaying information such as ID, title, number of copies, and price.
+     * The table is placed inside a scroll pane for ease of navigation.
+     *
+     * @param gbc the {@code GridBagConstraints} object that defines layout constraints
+     */
     private void addTable(GridBagConstraints gbc) {
         gbc.gridx = 0;
         gbc.gridy = 3;
@@ -157,7 +212,10 @@ public class Books extends JPanel {
         JScrollPane scrollPane = new JScrollPane(bookTable);
         add(scrollPane, gbc);
     }
-
+    /**
+     * Sets up and adds a submit button to the panel that adds the selected book to the cart.
+     * The button's action listener is configured to call the {@link #addBookToCart()} method when clicked.
+     */
     private void setupSubmitButton() {
         JButton submitButton = new JButton("Přidat knihu do košíku");
         GridBagConstraints gbc = getGridBagConstraints();
@@ -171,7 +229,11 @@ public class Books extends JPanel {
             addBookToCart();
         });
     }
-
+    /**
+     * Adds the selected book from the table to the cart by obtaining its ID and writing it to a file.
+     * The method also checks if the selected book has an amount greater than 0 and shows appropriate error messages
+     * if no book is selected or if the selected book is not available.
+     */
     private void addBookToCart(){
         int selectedRow = bookTable.getSelectedRow();
         if (selectedRow != -1) {
@@ -191,7 +253,12 @@ public class Books extends JPanel {
             Notification.showErrorMessage("Nebyla vybrána žádná kniha. Vyberte knihu, prosím.");
         }
     }
-
+    /**
+     * Writes the provided book ID to a file, creating the file if it doesn't already exist.
+     * If the book ID is already in the file, it shows an error message.
+     *
+     * @param bookId the ID of the book to be written to the file
+     */
     private void writeBookIdToFile(int bookId) {
         try {
             File file = new File("bookIDs.txt");
@@ -221,7 +288,9 @@ public class Books extends JPanel {
             ex.printStackTrace();
         }
     }
-
+    /**
+     * Sets up a listener for changes to the title field. Calls {@link #printTitleFieldChange()} for all changes.
+     */
     private void setupTitleFieldListener() {
         titleField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -240,7 +309,9 @@ public class Books extends JPanel {
             }
         });
     }
-
+    /**
+     * Sets up a listener for the author combo box, printing the selected author's ID and updating the table model.
+     */
     private void setupAuthorComboBoxListener() {
         authorComboBox.addItemListener(new ItemListener() {
             @Override
@@ -253,18 +324,29 @@ public class Books extends JPanel {
             }
         });
     }
-
+    /**
+     * Prints the current text of the title field and updates the table model.
+     */
     private void printTitleFieldChange() {
         System.out.println("titleField changed: " + titleField.getText());
         updateTableModel();
     }
-
+    /**
+     * Populates the given combo box with authors from the database.
+     *
+     * @param comboBox the combo box to fill with authors
+     */
     private void fillComboBoxWithAuthors(JComboBox<Author> comboBox) {
         ArrayList<Author> authors = loadAuthorsFromDB();
         for (Author author : authors) {
             comboBox.addItem(author);
         }
     }
+    /**
+     * Retrieves a list of authors from the database.
+     *
+     * @return the list of authors
+     */
     private ArrayList<Author> loadAuthorsFromDB() {
         ArrayList<Author> authors = new ArrayList<>();
         try (Connection conn = Config.getConnection();
@@ -280,6 +362,9 @@ public class Books extends JPanel {
         return authors;
     }
 
+    /**
+     * Sets up a double-click listener for the book table, calling {@link #handleDoubleClick()} when a double-click is detected.
+     */
     private void setupDoubleClickListener() {
         bookTable.addMouseListener(new MouseAdapter() {
             @Override
@@ -290,7 +375,9 @@ public class Books extends JPanel {
             }
         });
     }
-
+    /**
+     * Handles a double click on the book table, extracting the selected book's ID and calling {@link #openDifferentPanel(int)}.
+     */
     private void handleDoubleClick() {
         int selectedRow = bookTable.getSelectedRow();
         if (selectedRow != -1) {
@@ -301,7 +388,11 @@ public class Books extends JPanel {
             }
         }
     }
-
+    /**
+     * Opens a new panel displaying details for the given book ID. The panel is displayed in a new JFrame.
+     *
+     * @param bookId the ID of the book for which to display details
+     */
     private void openDifferentPanel(int bookId) {
         // Create an instance of the BookDetail class
         BookDetail bookDetail = new BookDetail(bookId, this);
