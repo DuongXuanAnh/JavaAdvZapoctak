@@ -97,7 +97,6 @@ public class Main {
         clearFile();
 
     }
-
     public static void clearFile(){
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {

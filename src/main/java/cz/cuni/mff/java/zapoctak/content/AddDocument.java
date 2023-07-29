@@ -321,7 +321,7 @@ public class AddDocument extends JPanel {
         return ducumentId;
     }
 
-    private void insertDocumentItems(int ducumentId) {
+    private void insertDocumentItems(int documentId) {
         for (int i = 0; i < chosenBooks.size(); i++) {
             BookData book = chosenBooks.get(i);
             JSpinner spinner = spinners.get(i);
@@ -337,7 +337,7 @@ public class AddDocument extends JPanel {
             }
 
             try (PreparedStatement statement_doklad_kniha = Config.getConnection().prepareStatement("INSERT INTO doklad_kniha (id_doklad, id_kniha, amount) VALUES (?, ?, ?)")) {
-                statement_doklad_kniha.setInt(1, ducumentId);
+                statement_doklad_kniha.setInt(1, documentId);
                 statement_doklad_kniha.setInt(2, book.getId());
                 statement_doklad_kniha.setInt(3, amount);
                 statement_doklad_kniha.executeUpdate();
@@ -346,6 +346,8 @@ public class AddDocument extends JPanel {
                 ex.printStackTrace();
             }
         }
+
+       resetPanel();
     }
 
     private void insertDocumentCustomer(int ducumentId, int customerID) {
@@ -369,8 +371,6 @@ public class AddDocument extends JPanel {
 
         dateChooser.setDate(null);
 
-
-
         try {
             PrintWriter writer = new PrintWriter("bookIDs.txt");
             writer.print("");
@@ -385,6 +385,26 @@ public class AddDocument extends JPanel {
         revalidate();
         repaint();
 
+    }
+    private void deleteFileContents() {
+
+        try {
+            PrintWriter writer = new PrintWriter("bookIDs.txt");
+            writer.print("");
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Nastal problém při mazání souboru 'bookIDs.txt'.");
+            e.printStackTrace();
+        }
+
+    }
+
+    void resetPanel(){
+        deleteFileContents();
+        AddDocument newAddDocument = new AddDocument();
+        getParent().add(newAddDocument, "addDocument");
+        CardLayout cardLayout = (CardLayout) getParent().getLayout();
+        cardLayout.show(getParent(), "addDocument");
     }
 
 }
