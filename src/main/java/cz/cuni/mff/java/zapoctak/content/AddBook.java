@@ -9,10 +9,7 @@ import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.sql.*;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class represents a panel for adding a new book.
@@ -32,6 +29,8 @@ public class AddBook extends JPanel {
     private final JFormattedTextField yearField;
     private final JSpinner quantitySpinner;
     private final JTextArea descriptionArea;
+
+    private final Map<JComboBox<String>, JButton> removeButtonsMap = new HashMap<>();
 
     public AddBook(){
         this.setBorder(TitleBorder.create("Přidat knihu"));
@@ -137,6 +136,8 @@ public class AddBook extends JPanel {
         add(newAuthorComboBox, gbc);
 
         JButton removeAuthorButton = new JButton("X");
+        removeButtonsMap.put(newAuthorComboBox, removeAuthorButton);
+
         gbc.gridx = 2;
         add(removeAuthorButton, gbc);
 
@@ -157,6 +158,7 @@ public class AddBook extends JPanel {
         remove(comboBoxToRemove);
         remove(buttonToRemove);
         authorComboBoxes.remove(comboBoxToRemove);
+        removeButtonsMap.remove(comboBoxToRemove);
         revalidate();
         repaint();
     }
@@ -376,6 +378,7 @@ public class AddBook extends JPanel {
                         insertBookAuthorRecord(conn, bookId, authorName);
                     }
                 }
+                resetForm();
                 Notification.showSuccessMessage("Kniha \"" + name + "\" byla úspěšně přidána");
             }
         } catch (SQLException ex) {
@@ -439,5 +442,35 @@ public class AddBook extends JPanel {
         return false;
     }
 
+    /**
+     * Resets the form by clearing all input fields and resetting them to their default values.
+     * This method is typically used to clear the form after a submission or to start with a fresh form.
+     */
+    private void resetForm() {
+        nameField.setText("");
 
+        genresComboBox.setSelectedIndex(0);
+
+        priceField.setValue(null);
+        yearField.setValue(null);
+
+        quantitySpinner.setValue(1);
+
+        descriptionArea.setText("");
+        if (authorComboBoxes.size() > 1) {
+            for (int i = authorComboBoxes.size() - 1; i > 0; i--) {
+                JComboBox<String> comboBoxToRemove = authorComboBoxes.get(i);
+                JButton removeButton = removeButtonsMap.get(comboBoxToRemove);
+
+                remove(comboBoxToRemove);
+                remove(removeButton);
+
+                authorComboBoxes.remove(i);
+                removeButtonsMap.remove(comboBoxToRemove);
+            }
+
+            revalidate();
+            repaint();
+        }
+    }
 }
