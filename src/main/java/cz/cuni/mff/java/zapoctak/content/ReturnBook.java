@@ -14,7 +14,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
+/**
+ * A JPanel class for returning books in a library management system.
+ * Allows users to search for a document ID, view the associated customer details,
+ * and the books associated with the document. Users can return the books and perform
+ * necessary database operations for updating book quantities and deleting records.
+ */
 public class ReturnBook extends JPanel {
 
     private final JTextField documentID;
@@ -37,7 +42,10 @@ public class ReturnBook extends JPanel {
         amountRentBooksList= new ArrayList<>();
         setupLayout();
     }
-
+    /**
+     * Sets up the layout of the ReturnBook panel.
+     * Configures the container panel and table panel.
+     */
     private void setupLayout() {
         setLayout(new BorderLayout());
         containerPanel = new JPanel();
@@ -50,7 +58,12 @@ public class ReturnBook extends JPanel {
         tablePanel.setLayout(new BorderLayout());
         add(tablePanel, BorderLayout.CENTER);
     }
-
+    /**
+     * Adds a "Return Book" button to the table panel.
+     * When clicked, this button initiates the process of returning books.
+     * It updates book quantities in the database and deletes associated records.
+     * Also, clears the table and customer information from the panel.
+     */
     private void addReturnButton() {
         JButton returnBookButton = new JButton("Vrátit knihy");
         returnBookButton.addActionListener(new ActionListener() {
@@ -85,7 +98,9 @@ public class ReturnBook extends JPanel {
         }
 
     }
-
+    /**
+     * Deletes the associated customer records from the database for the current document.
+     */
     private void deleteDocumentBook() {
         String deleteDokladKnihaSql = "DELETE FROM doklad_kniha WHERE id_doklad = ?";
         PreparedStatement deleteDokladKnihaStatement = null;
@@ -97,7 +112,9 @@ public class ReturnBook extends JPanel {
             throw new RuntimeException(e);
         }
     }
-
+    /**
+     * Deletes the associated book records from the database for the current document.
+     */
     private void deleteDocumentFromDB() {
         String deleteDokladSql = "DELETE FROM doklad WHERE id = ?";
         PreparedStatement deleteDokladStatement = null;
@@ -110,7 +127,10 @@ public class ReturnBook extends JPanel {
         }
 
     }
-
+    /**
+     * Updates the book quantities in the database for the returned books.
+     * Uses the 'bookIdList' and 'amountRentBooksList' to determine the changes.
+     */
     private void updateBookAmnoutInDB(){
         for (int i = 0; i < bookIdList.size(); i++){
             int bookID = bookIdList.get(i);
@@ -129,6 +149,10 @@ public class ReturnBook extends JPanel {
         }
     }
 
+    /**
+     * Adds the label and text field for entering the document ID.
+     * Also, adds the "Hledat" (Find) button to initiate the search for the document.
+     */
     private void addDocumentIDLabelAndField() {
         JLabel documentIDLabel = new JLabel("ID objednávky:");
         GridBagConstraints gbc = getGridBagConstraints(0, 0);
@@ -150,6 +174,14 @@ public class ReturnBook extends JPanel {
         containerPanel.add(findButton, gbc);
     }
 
+    /**
+     * Retrieves the table data from a ResultSet.
+     * Converts the data into a 2D array suitable for JTable.
+     *
+     * @param resultSet The ResultSet containing the table data.
+     * @return A 2D array containing the table data.
+     * @throws SQLException If a database error occurs while retrieving data.
+     */
     private Object[][] getTableDataFromResultSet(ResultSet resultSet) throws SQLException {
         resultSet.last();
         int numRows = resultSet.getRow();
@@ -173,7 +205,13 @@ public class ReturnBook extends JPanel {
 
         return tableData;
     }
-
+    /**
+     * Adds the customer label to the container panel with the provided customer details.
+     * Replaces the old label if it already exists.
+     *
+     * @param customerName The name of the customer.
+     * @param customerID   The ID of the customer.
+     */
     private void addCustomerLabel(String customerName, int customerID) {
         if (customerNameLabel != null) {
             containerPanel.remove(customerNameLabel); // Remove old label if it exists
@@ -184,7 +222,12 @@ public class ReturnBook extends JPanel {
         containerPanel.revalidate();
         containerPanel.repaint();
     }
-
+    /**
+     * Adds a JTable to the table panel with the provided table data.
+     * The table data should contain information about the books associated with the document.
+     *
+     * @param tableData A 2D array containing the table data.
+     */
     private void addTableToPanel(Object[][] tableData) {
         String[] columnNames = {"Nazev", "Datum", "DatumTo", "Amount"};
 
@@ -198,7 +241,11 @@ public class ReturnBook extends JPanel {
         tablePanel.revalidate();
         tablePanel.repaint();
     }
-
+    /**
+     * Shows the document associated with the entered document ID.
+     * Fetches data from the database and updates the UI accordingly.
+     * If the document ID is invalid or not found, displays an error message.
+     */
     private void showDocument() {
         String documentIDText = documentID.getText();
 
@@ -234,7 +281,13 @@ public class ReturnBook extends JPanel {
             System.out.println("Error: " + ex.getMessage());
         }
     }
-
+    /**
+     * Retrieves a GridBagConstraints object for arranging components in the container panel.
+     *
+     * @param gridx The horizontal position in the grid.
+     * @param gridy The vertical position in the grid.
+     * @return A GridBagConstraints object.
+     */
     private GridBagConstraints getGridBagConstraints(int gridx, int gridy) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = gridx;
@@ -244,7 +297,11 @@ public class ReturnBook extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
         return gbc;
     }
-
+    /**
+     * Clears the table panel and container panel by removing the table and customer label.
+     * Also clears the document ID text field.
+     * Updates the UI to reflect the changes.
+     */
     private void clearTableAndCustomerName() {
         if (scrollPane != null) {
             tablePanel.remove(scrollPane);
