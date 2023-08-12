@@ -100,7 +100,12 @@ public class AddCustomer extends JPanel {
                         String customerName = nameField.getText();
                         Date selectedDate = dateChooser.getDate();
                         if (checkCustomerData(customerName, selectedDate)) {
+                            try {
                                 insertCustomerToDb(customerName, selectedDate);
+                            } catch (SQLException ex) {
+                                Notification.showErrorMessage("Nastala chyba, prosím zkuste to znovu");
+                                System.out.println(ex);
+                            }
                         }
                 });
         }
@@ -135,7 +140,7 @@ public class AddCustomer extends JPanel {
      * @param customerName The customer's name.
      * @param selectedDate The customer's birthdate.
      */
-        private void insertCustomerToDb(String customerName, Date selectedDate) {
+        private void insertCustomerToDb(String customerName, Date selectedDate) throws SQLException {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
             String dateStr = format.format(selectedDate);
 
@@ -155,9 +160,6 @@ public class AddCustomer extends JPanel {
                         Notification.showErrorMessage("Nastala chyba, prosím zkuste to znovu");
                     }
                 }
-            } catch (SQLException ex) {
-                Notification.showErrorMessage("Chyba, zkuste to znovu nebo kontaktujte IT oddělení");
-                System.out.println(ex);
             }
         }
 

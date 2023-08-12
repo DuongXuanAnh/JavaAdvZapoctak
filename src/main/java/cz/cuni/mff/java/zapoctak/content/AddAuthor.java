@@ -112,7 +112,11 @@ public class AddAuthor extends JPanel {
         String national = (String) nationalComboBox.getSelectedItem();
 
         if (checkAuthorData(name, national)) {
-            insertAuthorToDb(name, national);
+            try {
+                insertAuthorToDb(name, national);
+            } catch (SQLException ex) {
+                Notification.showErrorMessage("Nastal problém při vkládání do databáze, zkuste to znovu nebo informujte IT oddělení");
+            }
         }
     }
 
@@ -142,7 +146,7 @@ public class AddAuthor extends JPanel {
      * @param name     The name of the author.
      * @param national The nationality of the author.
      */
-    private void insertAuthorToDb(String name, String national) {
+    private void insertAuthorToDb(String name, String national) throws SQLException {
         try (Connection conn = Config.getConnection();
              PreparedStatement checkStatement = conn.prepareStatement("SELECT id, jmeno FROM autor WHERE jmeno = ?");
              PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO autor (jmeno, narodnost) VALUES (?, ?)")) {
@@ -161,8 +165,6 @@ public class AddAuthor extends JPanel {
                     resetForm();
                 }
             }
-        } catch (SQLException ex) {
-            Notification.showErrorMessage("Nastal problém, zkuste to znovu nebo informujte IT oddělení");
         }
     }
 

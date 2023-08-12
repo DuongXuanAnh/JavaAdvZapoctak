@@ -50,7 +50,12 @@ public class Books extends JPanel {
         setupLayout();
         setupSubmitButton();
         setupListeners();
-        updateTableModel();
+        try {
+            updateTableModel();
+        } catch (SQLException e) {
+            Notification.showErrorMessage("Problém se připojení k databázi");
+            System.out.println(e);
+        }
     }
     /**
      * Sets up the layout for the panel, configuring the appearance and placement of
@@ -159,7 +164,7 @@ public class Books extends JPanel {
      * Updates the table model by querying the database for books, filtered by title and author if specified.
      * The data from the result set is extracted and added as rows to the table model.
      */
-    public void updateTableModel() {
+    public void updateTableModel() throws SQLException {
         String titleQuery = titleField.getText().trim();
         Author selectedAuthor = (Author) authorComboBox.getSelectedItem();
 
@@ -191,8 +196,6 @@ public class Books extends JPanel {
                     tableModel.addRow(new Object[]{id, title, amount, cena});
                 }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
         revalidate();
         repaint();
@@ -319,7 +322,12 @@ public class Books extends JPanel {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     Author selectedAuthor = (Author) authorComboBox.getSelectedItem();
                     System.out.println("authorComboBox changed: " + selectedAuthor.getId());
-                    updateTableModel();
+                    try {
+                        updateTableModel();
+                    } catch (SQLException ex) {
+                        Notification.showErrorMessage("Problém se připojení k databázi");
+                        System.out.println(e);
+                    }
                 }
             }
         });
@@ -329,7 +337,12 @@ public class Books extends JPanel {
      */
     private void printTitleFieldChange() {
         System.out.println("titleField changed: " + titleField.getText());
-        updateTableModel();
+        try {
+            updateTableModel();
+        } catch (SQLException e) {
+            Notification.showErrorMessage("Problém se připojení k databázi");
+            System.out.println(e);
+        }
     }
     /**
      * Populates the given combo box with authors from the database.
@@ -337,17 +350,24 @@ public class Books extends JPanel {
      * @param comboBox the combo box to fill with authors
      */
     private void fillComboBoxWithAuthors(JComboBox<Author> comboBox) {
-        ArrayList<Author> authors = loadAuthorsFromDB();
-        for (Author author : authors) {
-            comboBox.addItem(author);
+        ArrayList<Author> authors = null;
+        try {
+            authors = loadAuthorsFromDB();
+            for (Author author : authors) {
+                comboBox.addItem(author);
+            }
+        } catch (SQLException e) {
+            Notification.showErrorMessage("Nepodařilo se načíst autory z databáze");
+            System.out.println(e);
         }
+
     }
     /**
      * Retrieves a list of authors from the database.
      *
      * @return the list of authors
      */
-    private ArrayList<Author> loadAuthorsFromDB() {
+    private ArrayList<Author> loadAuthorsFromDB() throws SQLException {
         ArrayList<Author> authors = new ArrayList<>();
         try (Connection conn = Config.getConnection();
              Statement stmt = conn.createStatement();
@@ -356,8 +376,6 @@ public class Books extends JPanel {
             while (rs.next()) {
                 authors.add(new Author(rs.getInt("id"), rs.getString("jmeno")));
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
         return authors;
     }

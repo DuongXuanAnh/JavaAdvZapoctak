@@ -112,10 +112,21 @@ public class AddDocument extends JPanel {
             return;
         }
 
-        int documentId = insertDocument(totalPrice, dateRentTo);
+        int documentId = 0;
+        try {
+            documentId = insertDocument(totalPrice, dateRentTo);
+        } catch (SQLException e) {
+            Notification.showErrorMessage("Nastal problém při vložení dokumentu, zkuste to znovu nebo informujte IT oddělení");
+            System.out.println(e);
+        }
 
         if (documentId != -1) {
-            insertDocumentItems(documentId);
+            try {
+                insertDocumentItems(documentId);
+            } catch (SQLException e) {
+                Notification.showErrorMessage("Nastal problém při vložení dokumentu, zkuste to znovu nebo informujte IT oddělení");
+                System.out.println(e);
+            }
             insertDocumentCustomer(documentId, customerID);
             resetFields();
             Notification.showSuccessMessage("Objednávka byla úspěšně vytvořena.");
@@ -332,7 +343,13 @@ public class AddDocument extends JPanel {
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
                 String id = scanner.nextLine();
-                BookData book = getBookTitleAndPriceFromDB(Integer.parseInt(id));
+                BookData book = null;
+                try {
+                    book = getBookTitleAndPriceFromDB(Integer.parseInt(id));
+                } catch (SQLException e) {
+                    Notification.showErrorMessage("Nastal problém při načítání dat knihy, zkuste to znovu nebo informujte IT oddělení");
+                    System.out.println(e);
+                }
                 chosenBooks.add(book);
             }
             scanner.close();
@@ -352,7 +369,7 @@ public class AddDocument extends JPanel {
      *         Returns an empty {@link BookData} object if no data is found for the given book ID.
      * @throws SQLException If there is an issue querying the database. Errors are logged and displayed to the user.
      */
-    public BookData getBookTitleAndPriceFromDB(int bookId){
+    public BookData getBookTitleAndPriceFromDB(int bookId) throws SQLException{
         BookData bookData = new BookData();
         try (Connection conn = Config.getConnection();
              PreparedStatement statement = conn.prepareStatement("SELECT id, nazev, cena, amount FROM kniha WHERE id = ?")) {
@@ -369,11 +386,12 @@ public class AddDocument extends JPanel {
                 System.out.println("Nenalezeno žádné data pro knihu s ID: " + bookId);
                 Notification.showErrorMessage("Nenalezeno žádné data pro knihu s ID: " + bookId);
             }
-        } catch (SQLException ex) {
-            System.out.println("Nastal problém při načítání dat knihy, zkuste to znovu nebo informujte IT oddělení");
-            Notification.showErrorMessage("Nastal problém při načítání dat knihy, zkuste to znovu nebo informujte IT oddělení");
-            ex.printStackTrace();
         }
+//        catch (SQLException ex) {
+//            System.out.println("Nastal problém při načítání dat knihy, zkuste to znovu nebo informujte IT oddělení");
+//            Notification.showErrorMessage("Nastal problém při načítání dat knihy, zkuste to znovu nebo informujte IT oddělení");
+//            ex.printStackTrace();
+//        }
 
         return bookData;
     }
@@ -416,7 +434,7 @@ public class AddDocument extends JPanel {
      * @throws SQLException If there is a problem executing the SQL statement, such as constraint violations,
      *                      problems with the connection to the database, or other SQL-related issues.
      */
-    private int insertDocument(double totalPrice, String dateRentTo) {
+    private int insertDocument(double totalPrice, String dateRentTo) throws SQLException {
         String sql_doklad = (dateRentTo == null) ?
                 "INSERT INTO doklad (totalPrice) VALUES (?)" :
                 "INSERT INTO doklad (datumTo, totalPrice) VALUES (?, ?)";
@@ -436,10 +454,11 @@ public class AddDocument extends JPanel {
                     }
                 }
             }
-        } catch (SQLException ex) {
-            System.out.println("Nastal problém při vložení dokumentu, zkuste to znovu nebo informujte IT oddělení");
-            ex.printStackTrace();
         }
+//        catch (SQLException ex) {
+//            System.out.println("Nastal problém při vložení dokumentu, zkuste to znovu nebo informujte IT oddělení");
+//            ex.printStackTrace();
+//        }
         return ducumentId;
     }
 
@@ -454,7 +473,7 @@ public class AddDocument extends JPanel {
      * @throws SQLException If there is a problem executing the SQL statements, such as constraint violations,
      *                      problems with the connection to the database, or other SQL-related issues.
      */
-    private void insertDocumentItems(int documentId) {
+    private void insertDocumentItems(int documentId) throws SQLException {
         for (int i = 0; i < chosenBooks.size(); i++) {
             BookData book = chosenBooks.get(i);
             JSpinner spinner = spinners.get(i);
@@ -464,9 +483,6 @@ public class AddDocument extends JPanel {
                 statement_kniha.setInt(1, amount);
                 statement_kniha.setInt(2, book.getId());
                 statement_kniha.executeUpdate();
-            } catch (SQLException ex) {
-                System.out.println("Nastal problém při aktualizaci knihy, zkuste to znovu nebo informujte IT oddělení");
-                ex.printStackTrace();
             }
 
             try (PreparedStatement statement_doklad_kniha = Config.getConnection().prepareStatement("INSERT INTO doklad_kniha (id_doklad, id_kniha, amount) VALUES (?, ?, ?)")) {
@@ -474,9 +490,6 @@ public class AddDocument extends JPanel {
                 statement_doklad_kniha.setInt(2, book.getId());
                 statement_doklad_kniha.setInt(3, amount);
                 statement_doklad_kniha.executeUpdate();
-            } catch (SQLException ex) {
-                System.out.println("Nastal problém při vložení záznamu doklad_kniha, zkuste to znovu nebo informujte IT oddělení");
-                ex.printStackTrace();
             }
         }
 

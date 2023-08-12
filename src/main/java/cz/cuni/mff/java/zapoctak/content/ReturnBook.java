@@ -70,12 +70,30 @@ public class ReturnBook extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (currentTable != null) {
-                    // here
-                    System.out.println(currDocumentID);
-                    updateBookAmnoutInDB();
-                    deleteDocumentFromDB();
-                    deleteDocumentBook();
-                    deleteDocumentCustomer();
+                    try {
+                        updateBookAmnoutInDB();
+                    } catch (SQLException ex) {
+                        Notification.showErrorMessage("Akce se nepodařila, zkuste to znovu");
+                        System.out.println(ex);
+                    }
+                    try {
+                        deleteDocumentFromDB();
+                    } catch (SQLException ex) {
+                        Notification.showErrorMessage("Akce se nepodařila, zkuste to znovu");
+                        System.out.println(ex);
+                    }
+                    try {
+                        deleteDocumentBook();
+                    } catch (SQLException ex) {
+                        Notification.showErrorMessage("Akce se nepodařila, zkuste to znovu");
+                        System.out.println(ex);
+                    }
+                    try {
+                        deleteDocumentCustomer();
+                    } catch (SQLException ex) {
+                        Notification.showErrorMessage("Akce se nepodařila, zkuste to znovu");
+                        System.out.println(ex);
+                    }
                     clearTableAndCustomerName();
                     Notification.showSuccessMessage("Knihy byly vráceny");
                 }
@@ -88,45 +106,39 @@ public class ReturnBook extends JPanel {
     /**
      * Deletes the associated customer records from the database for the current document.
      */
-    private void deleteDocumentCustomer() {
+    private void deleteDocumentCustomer()throws SQLException {
         String deleteDokladZakaznikSql = "DELETE FROM doklad_zakaznik WHERE id_doklad = ?";
         try (PreparedStatement deleteDokladZakaznikStatement = Config.getConnection().prepareStatement(deleteDokladZakaznikSql)) {
             deleteDokladZakaznikStatement.setInt(1, currDocumentID);
             deleteDokladZakaznikStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
     /**
      * Deletes the associated book records from the database for the current document.
      */
-    private void deleteDocumentBook() {
+    private void deleteDocumentBook() throws SQLException {
         String deleteDokladKnihaSql = "DELETE FROM doklad_kniha WHERE id_doklad = ?";
         try (PreparedStatement deleteDokladKnihaStatement = Config.getConnection().prepareStatement(deleteDokladKnihaSql)) {
             deleteDokladKnihaStatement.setInt(1, currDocumentID);
             deleteDokladKnihaStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
     /**
      * Deletes a document from the database with the specified ID.
      */
-    private void deleteDocumentFromDB() {
+    private void deleteDocumentFromDB() throws SQLException {
         String deleteDokladSql = "DELETE FROM doklad WHERE id = ?";
         try (PreparedStatement deleteDokladStatement = Config.getConnection().prepareStatement(deleteDokladSql)) {
             deleteDokladStatement.setInt(1, currDocumentID);
             deleteDokladStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
     /**
      * Updates the book quantities in the database for the returned books.
      * Uses the 'bookIdList' and 'amountRentBooksList' to determine the changes.
      */
-    private void updateBookAmnoutInDB() {
+    private void updateBookAmnoutInDB() throws SQLException {
         for (int i = 0; i < bookIdList.size(); i++) {
             int bookID = bookIdList.get(i);
             int bookAmount = amountRentBooksList.get(i);
@@ -135,8 +147,6 @@ public class ReturnBook extends JPanel {
                 updateBookAmountStatement.setInt(1, bookAmount);
                 updateBookAmountStatement.setInt(2, bookID);
                 updateBookAmountStatement.executeUpdate();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
             }
         }
     }
@@ -157,7 +167,11 @@ public class ReturnBook extends JPanel {
         findButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showDocument();
+                try {
+                    showDocument();
+                } catch (SQLException ex) {
+                    Notification.showErrorMessage("Nastala chyba, zkuste to znovu");
+                }
                 revalidate();
                 repaint();
             }
@@ -238,7 +252,7 @@ public class ReturnBook extends JPanel {
      * Fetches data from the database and updates the UI accordingly.
      * If the document ID is invalid or not found, displays an error message.
      */
-    private void showDocument() {
+    private void showDocument() throws SQLException {
         String documentIDText = documentID.getText();
 
         if (documentIDText.isEmpty() || !documentIDText.matches("\\d+")) {

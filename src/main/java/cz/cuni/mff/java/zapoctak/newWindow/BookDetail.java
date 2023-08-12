@@ -49,7 +49,11 @@ public class BookDetail extends JPanel {
         this.book = book;
 
         setupLayout();
-        loadDataFromDatabase(bookId);
+        try {
+            loadDataFromDatabase(bookId);
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
 
     }
     /**
@@ -58,7 +62,12 @@ public class BookDetail extends JPanel {
      * @param authorComboBox The JComboBox to be filled with author names.
      */
     private void fillComboBoxWithAuthors(JComboBox<String> authorComboBox) {
-        ArrayList<String> authors = loadAuthorsFromDB();
+        ArrayList<String> authors = null;
+        try {
+            authors = loadAuthorsFromDB();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         for (String author : authors) {
             authorComboBox.addItem(author);
         }
@@ -69,7 +78,7 @@ public class BookDetail extends JPanel {
      * It establishes a connection to the database using the {@link Config} class and executes
      * an SQL query to fetch author names from the "autor" table.
      */
-    private ArrayList<String> loadAuthorsFromDB() {
+    private ArrayList<String> loadAuthorsFromDB() throws SQLException {
         ArrayList<String> authors = new ArrayList<>();
         try (Connection conn = Config.getConnection();
              Statement stmt = conn.createStatement();
@@ -78,8 +87,6 @@ public class BookDetail extends JPanel {
             while (rs.next()) {
                 authors.add(rs.getString("jmeno"));
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
         return authors;
     }
@@ -234,7 +241,7 @@ public class BookDetail extends JPanel {
      *
      * @param bookId The ID of the book to load data for.
      */
-    private void loadDataFromDatabase(int bookId) {
+    private void loadDataFromDatabase(int bookId) throws SQLException{
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("SELECT * FROM kniha WHERE id = ?")) {
 
@@ -285,8 +292,6 @@ public class BookDetail extends JPanel {
                     }
                 }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
     }
     /**
@@ -313,7 +318,7 @@ public class BookDetail extends JPanel {
      * @param bookId The ID of the book for which to retrieve the authors.
      * @return An ArrayList containing the names of authors associated with the book.
      */
-    private ArrayList<String> loadAuthorsForBook(int bookId) {
+    private ArrayList<String> loadAuthorsForBook(int bookId) throws SQLException{
         ArrayList<String> authors = new ArrayList<>();
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("SELECT autor_id, jmeno FROM kniha_autor_view WHERE id = ?")) {
@@ -323,8 +328,6 @@ public class BookDetail extends JPanel {
                     authors.add(rs.getString("jmeno"));
                 }
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
         return authors;
     }
@@ -415,7 +418,11 @@ public class BookDetail extends JPanel {
             return;
         }
 
-        updateBookInDB(bookId, bookName, bookAuthors, bookGenre, bookPrice, bookYear, bookQuantity, bookDescription);
+        try {
+            updateBookInDB(bookId, bookName, bookAuthors, bookGenre, bookPrice, bookYear, bookQuantity, bookDescription);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println(bookAuthors.size());
     }
@@ -431,7 +438,7 @@ public class BookDetail extends JPanel {
      * @param quantity The quantity of the book in stock.
      * @param description The description of the book.
      */
-    private void updateBookInDB(int bookId, String name, ArrayList<String> authorNames, String genre, double price, int year, int quantity, String description) {
+    private void updateBookInDB(int bookId, String name, ArrayList<String> authorNames, String genre, double price, int year, int quantity, String description) throws SQLException{
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("UPDATE kniha SET nazev=?, zanr=?, cena=?, rok_vydani=?, amount=?, popis=? WHERE id=?")) {
 
@@ -459,8 +466,6 @@ public class BookDetail extends JPanel {
                 Notification.showSuccessMessage("Nastala chyba, zkuste to znovu!");
             }
 
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
     }
     /**
@@ -469,7 +474,7 @@ public class BookDetail extends JPanel {
      * @param bookId The ID of the book whose authors are to be updated.
      * @param authorNames An ArrayList containing the names of the authors to be associated with the book.
      */
-    private void updateAuthorsForBook(int bookId, ArrayList<String> authorNames) {
+    private void updateAuthorsForBook(int bookId, ArrayList<String> authorNames) throws SQLException{
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("DELETE FROM kniha_autor WHERE id_kniha=?")) {
 
@@ -482,8 +487,6 @@ public class BookDetail extends JPanel {
                 insertAuthorForBook(bookId, authorName);
             }
 
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
     }
     /**
@@ -492,7 +495,7 @@ public class BookDetail extends JPanel {
      * @param bookId The ID of the book to associate with the author.
      * @param authorName The name of the author to be inserted.
      */
-    private void insertAuthorForBook(int bookId, String authorName) {
+    private void insertAuthorForBook(int bookId, String authorName) throws SQLException{
         try (Connection conn = Config.getConnection();
              PreparedStatement stmt = conn.prepareStatement("INSERT INTO kniha_autor (id_kniha, id_autor) VALUES (?, (SELECT id FROM autor WHERE jmeno=?))")) {
 
@@ -500,8 +503,6 @@ public class BookDetail extends JPanel {
             stmt.setString(2, authorName);
             stmt.executeUpdate();
 
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
     }
     /**
