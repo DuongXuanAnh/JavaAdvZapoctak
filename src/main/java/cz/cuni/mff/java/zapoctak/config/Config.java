@@ -23,14 +23,7 @@ public class Config {
      * @return A Connection object representing the database connection.
      * @throws RuntimeException If a database connection cannot be established.
      */
-    public static Connection getConnection() {
-        try {
-            return DriverManager.getConnection(DATABASE_URL, USERNAME, PASSWORD);
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Cannot establish database connection", ex);
-            Notification.showErrorMessage("Cannot establish database connection");
-            System.exit(0);
-            throw new RuntimeException("Cannot establish database connection", ex);
-        }
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(DATABASE_URL, USERNAME, PASSWORD);
     }
 }
