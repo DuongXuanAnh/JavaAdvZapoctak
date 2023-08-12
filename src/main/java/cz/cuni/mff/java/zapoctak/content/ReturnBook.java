@@ -85,27 +85,25 @@ public class ReturnBook extends JPanel {
         tablePanel.revalidate();
         tablePanel.repaint();
     }
-
+    /**
+     * Deletes the associated customer records from the database for the current document.
+     */
     private void deleteDocumentCustomer() {
         String deleteDokladZakaznikSql = "DELETE FROM doklad_zakaznik WHERE id_doklad = ?";
-        PreparedStatement deleteDokladZakaznikStatement = null;
-        try {
-            deleteDokladZakaznikStatement = Config.getConnection().prepareStatement(deleteDokladZakaznikSql);
+        try (PreparedStatement deleteDokladZakaznikStatement = Config.getConnection().prepareStatement(deleteDokladZakaznikSql)) {
             deleteDokladZakaznikStatement.setInt(1, currDocumentID);
             deleteDokladZakaznikStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
+
     /**
-     * Deletes the associated customer records from the database for the current document.
+     * Deletes the associated book records from the database for the current document.
      */
     private void deleteDocumentBook() {
         String deleteDokladKnihaSql = "DELETE FROM doklad_kniha WHERE id_doklad = ?";
-        PreparedStatement deleteDokladKnihaStatement = null;
-        try {
-            deleteDokladKnihaStatement = Config.getConnection().prepareStatement(deleteDokladKnihaSql);
+        try (PreparedStatement deleteDokladKnihaStatement = Config.getConnection().prepareStatement(deleteDokladKnihaSql)) {
             deleteDokladKnihaStatement.setInt(1, currDocumentID);
             deleteDokladKnihaStatement.executeUpdate();
         } catch (SQLException e) {
@@ -113,39 +111,33 @@ public class ReturnBook extends JPanel {
         }
     }
     /**
-     * Deletes the associated book records from the database for the current document.
+     * Deletes a document from the database with the specified ID.
      */
     private void deleteDocumentFromDB() {
         String deleteDokladSql = "DELETE FROM doklad WHERE id = ?";
-        PreparedStatement deleteDokladStatement = null;
-        try {
-            deleteDokladStatement = Config.getConnection().prepareStatement(deleteDokladSql);
+        try (PreparedStatement deleteDokladStatement = Config.getConnection().prepareStatement(deleteDokladSql)) {
             deleteDokladStatement.setInt(1, currDocumentID);
             deleteDokladStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
     /**
      * Updates the book quantities in the database for the returned books.
      * Uses the 'bookIdList' and 'amountRentBooksList' to determine the changes.
      */
-    private void updateBookAmnoutInDB(){
-        for (int i = 0; i < bookIdList.size(); i++){
+    private void updateBookAmnoutInDB() {
+        for (int i = 0; i < bookIdList.size(); i++) {
             int bookID = bookIdList.get(i);
             int bookAmount = amountRentBooksList.get(i);
             String updateBookAmountSql = "UPDATE kniha SET amount=amount + ? WHERE id=?";
-            PreparedStatement updateBookAmountStatement = null;
-            try {
-                updateBookAmountStatement = Config.getConnection().prepareStatement(updateBookAmountSql);
+            try (PreparedStatement updateBookAmountStatement = Config.getConnection().prepareStatement(updateBookAmountSql)) {
                 updateBookAmountStatement.setInt(1, bookAmount);
                 updateBookAmountStatement.setInt(2, bookID);
                 updateBookAmountStatement.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-
         }
     }
 
@@ -249,34 +241,31 @@ public class ReturnBook extends JPanel {
     private void showDocument() {
         String documentIDText = documentID.getText();
 
-        if(documentIDText.isEmpty() || !documentIDText.matches("\\d+")){
+        if (documentIDText.isEmpty() || !documentIDText.matches("\\d+")) {
             Notification.showErrorMessage("ID objednávky je nevalidní");
             return;
         }
 
-        try (Connection conn = Config.getConnection()) {
-            String sql = "SELECT * FROM document WHERE dokladID = ?";
-            PreparedStatement statement = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-
+        try (Connection conn = Config.getConnection();
+             PreparedStatement statement = conn.prepareStatement("SELECT * FROM document WHERE dokladID = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
 
             statement.setInt(1, Integer.parseInt(documentIDText));
 
-            ResultSet resultSet = statement.executeQuery();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    addCustomerLabel(resultSet.getString("jmeno"), resultSet.getInt("zakaznikID"));
 
-            if (resultSet.next()) {
-                addCustomerLabel(resultSet.getString("jmeno"), resultSet.getInt("zakaznikID"));
+                    bookIdList.add(resultSet.getInt("bookID"));
+                    amountRentBooksList.add(resultSet.getInt("amount"));
 
-                bookIdList.add(resultSet.getInt("bookID"));
-                amountRentBooksList.add(resultSet.getInt("amount"));
-
-                Object[][] tableData = getTableDataFromResultSet(resultSet);
-                addTableToPanel(tableData);
-                currDocumentID = Integer.parseInt(documentIDText);
-            } else {
-                Notification.showErrorMessage("ID objednávky neexistuje");
-                System.out.println("No records found for document ID " + documentIDText);
+                    Object[][] tableData = getTableDataFromResultSet(resultSet);
+                    addTableToPanel(tableData);
+                    currDocumentID = Integer.parseInt(documentIDText);
+                } else {
+                    Notification.showErrorMessage("ID objednávky neexistuje");
+                    System.out.println("No records found for document ID " + documentIDText);
+                }
             }
-
         } catch (SQLException ex) {
             System.out.println("Error: " + ex.getMessage());
         }
