@@ -284,7 +284,7 @@ public class AddBook extends JPanel {
      Loads the authors from the database and returns them as an ArrayList of Strings.
      @return ArrayList of authors loaded from the database
      */
-    private ArrayList<String> loadAuthorsFromDB() {
+    private ArrayList<String> loadAuthorsFromDB() throws SQLException {
         ArrayList<String> authors = new ArrayList<>();
         try (Connection conn = Config.getConnection();
              Statement stmt = conn.createStatement();
@@ -293,8 +293,6 @@ public class AddBook extends JPanel {
             while (rs.next()) {
                 authors.add(rs.getString("jmeno"));
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
         return authors;
     }
@@ -304,10 +302,15 @@ public class AddBook extends JPanel {
      @param comboBox combo box to fill with authors
      */
     private void fillComboBoxWithAuthors(JComboBox<String> comboBox) {
-        ArrayList<String> authors = loadAuthorsFromDB();
-        for (String author : authors) {
-            comboBox.addItem(author);
+        try {
+            ArrayList<String> authors = loadAuthorsFromDB();
+            for (String author : authors) {
+                comboBox.addItem(author);
+            }
+        }catch (SQLException e){
+            Notification.showErrorMessage("Nepodařilo se načíst autory z databáze");
         }
+
     }
 
     /**
@@ -338,7 +341,11 @@ public class AddBook extends JPanel {
         }
 
         // Předpokládáme, že máte metodu pro vložení knihy do databáze, která přijímá tyto parametry
-        insertBookIntoDB(bookName, bookAuthors, bookGenre, bookPrice, bookYear, bookQuantity, bookDescription);
+        try {
+            insertBookIntoDB(bookName, bookAuthors, bookGenre, bookPrice, bookYear, bookQuantity, bookDescription);
+        } catch (SQLException e) {
+            Notification.showErrorMessage("Chyba při přidání knihy do databáze");
+        }
     }
     /**
      Inserts the book information into the database.
@@ -350,7 +357,7 @@ public class AddBook extends JPanel {
      @param quantity book quantity
      @param description book description
      */
-    private void insertBookIntoDB(String name, ArrayList<String> authorNames, String genre, double price, int year, int quantity, String description) {
+    private void insertBookIntoDB(String name, ArrayList<String> authorNames, String genre, double price, int year, int quantity, String description) throws SQLException {
 
         try (Connection conn = Config.getConnection();
              PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO `kniha`(nazev, rok_vydani, cena, zanr, amount, popis) VALUES (?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)) {
