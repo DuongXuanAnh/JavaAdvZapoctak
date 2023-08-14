@@ -29,12 +29,12 @@ public class Main {
 
         // Create the menu panel with buttons to switch between different panels
         JPanel menuPanel = new JPanel(new GridLayout(1, 0));
-        JButton authorButton = new JButton("Add Author");
-        JButton bookButton = new JButton("Add Book");
-        JButton customerButton = new JButton("Add Customer");
-        JButton documentButton = new JButton("Create Document");
-        JButton booksButton = new JButton("Books");
-        JButton returnBookButton = new JButton("Return Book");
+        JButton authorButton = new JButton("Přidat autora");
+        JButton bookButton = new JButton("Přidat knihu");
+        JButton customerButton = new JButton("Přidat zákazníka");
+        JButton documentButton = new JButton("Objednávka");
+        JButton booksButton = new JButton("Knihy");
+        JButton returnBookButton = new JButton("Vrátit knihu");
 
         // Create the card panel to hold the different panels
         JPanel cardPanel = new JPanel(new CardLayout());
