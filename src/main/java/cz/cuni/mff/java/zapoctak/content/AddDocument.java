@@ -36,6 +36,8 @@ public class AddDocument extends JPanel {
     JLabel nameLabel;
     JLabel birthDateLabel;
 
+    boolean validCustomer;
+
     ArrayList<BookData> chosenBooks = new ArrayList<>();
 
     ArrayList<JSpinner> spinners = new ArrayList<>();
@@ -103,6 +105,11 @@ public class AddDocument extends JPanel {
 
         if(chosenDate != null && chosenDate.before(currentDate)) {
             Notification.showErrorMessage("Vybraný den musí být v budoucnosti");
+            return;
+        }
+
+        if(nameLabel == null || birthDateLabel== null || !validCustomer){
+            Notification.showErrorMessage("Neplatný zákazník");
             return;
         }
 
@@ -318,22 +325,33 @@ public class AddDocument extends JPanel {
     private void showCorrespondingCustomer() throws SQLException {
         String idString = customerIdField.getText();
 
-        if(idString.isEmpty() || idString.equals("")){
+        if(idString.isEmpty()){
             Notification.showErrorMessage("Zadejte ID zákazníka");
+            return;
+        }
+
+        int id;
+        try {
+            id = Integer.parseInt(idString);
+        } catch (NumberFormatException e) {
+            Notification.showErrorMessage("Zadané ID není platné");
             return;
         }
 
         try (Connection conn = Config.getConnection()) {
             String sql = "SELECT jmeno, datum_narozeni FROM zakaznik WHERE id = ?";
             PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setInt(1, Integer.parseInt(idString));
+            statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
-            String name = " Not found";
-            String datumNarozeni = " Not found";
+            String name = "Not found";
+            String datumNarozeni = "Not found";
 
             if(resultSet.next()){
                 name = resultSet.getString("jmeno");
                 datumNarozeni = resultSet.getString("datum_narozeni");
+                validCustomer = true;
+            }else{
+                validCustomer = false;
             }
 
             displayCustomerDetails(name, datumNarozeni);
@@ -367,7 +385,7 @@ public class AddDocument extends JPanel {
         revalidate();
         repaint();
     }
-    
+
     /**
      * Removes the previously displayed customer details from the GUI.
      * <p>
