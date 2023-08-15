@@ -8,6 +8,8 @@ import cz.cuni.mff.java.zapoctak.global.TitleBorder;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -30,6 +32,9 @@ public class AddDocument extends JPanel {
     JComboBox<String> typeComboBox;
     JDateChooser dateChooser;
     JTextField customerIdField;
+
+    JLabel nameLabel;
+    JLabel birthDateLabel;
 
     ArrayList<BookData> chosenBooks = new ArrayList<>();
 
@@ -179,7 +184,7 @@ public class AddDocument extends JPanel {
     private void showChosenBook(GridBagConstraints gbc, BookData book, int positionIndex){
         JLabel chosenBook = new JLabel("* " + book.getTitle() + " - " + book.getPrice() + "Kč");
         gbc.gridx = 0;
-        gbc.gridy = 5 + positionIndex;
+        gbc.gridy = 7 + positionIndex;
         add(chosenBook, gbc);
 
         SpinnerModel model = new SpinnerNumberModel(1, 1, book.getAmount(), 1);
@@ -187,7 +192,7 @@ public class AddDocument extends JPanel {
         spinners.add(spinner);
         spinner.addChangeListener(e -> updateTotalPrice());
         gbc.gridx = 1;
-        gbc.gridy = 5 + positionIndex;
+        gbc.gridy = 7 + positionIndex;
         add(spinner, gbc);
 
         JButton removeOrderBookButton = new JButton("X");
@@ -195,7 +200,7 @@ public class AddDocument extends JPanel {
             removeOrderBook(book, chosenBook, spinner, removeOrderBookButton);
         });
         gbc.gridx = 2;
-        gbc.gridy = 5 + positionIndex;
+        gbc.gridy = 7 + positionIndex;
         add(removeOrderBookButton, gbc);
     }
 
@@ -256,7 +261,7 @@ public class AddDocument extends JPanel {
     private void addChosenBookAndAmountSpinner(GridBagConstraints gbc) {
         JLabel ChosenBookTitleLabel = new JLabel("Vybrané knihy:");
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 6;
         add(ChosenBookTitleLabel, gbc);
 
         readChosenBookFromFile();
@@ -285,6 +290,98 @@ public class AddDocument extends JPanel {
 
         gbc.gridx = 1;
         add(customerIdField, gbc);
+
+        customerIdField.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.VK_ENTER) {
+                    try {
+                        removeOldCustomerDetails();
+                        showCorrespondingCustomer();
+                    } catch (SQLException e) {
+                        Notification.showErrorMessage("Nastal problém při načítání zákazniků, zkuste to znovu nebo informujte IT oddělení");
+                        System.out.println(e);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Fetches and displays the details of a customer with a given ID.
+     * This method attempts to retrieve the name and birthdate of a customer
+     * based on the ID entered into the customerIdField. If a customer with
+     * the provided ID is found, their details are displayed on the GUI.
+     * Otherwise, a "Not found" message is shown for both the name and birthdate.
+     *
+     * @throws SQLException if there's an error accessing the database.
+     */
+    private void showCorrespondingCustomer() throws SQLException {
+        String idString = customerIdField.getText();
+
+        if(idString.isEmpty() || idString.equals("")){
+            Notification.showErrorMessage("Zadejte ID zákazníka");
+            return;
+        }
+
+        try (Connection conn = Config.getConnection()) {
+            String sql = "SELECT jmeno, datum_narozeni FROM zakaznik WHERE id = ?";
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setInt(1, Integer.parseInt(idString));
+            ResultSet resultSet = statement.executeQuery();
+            String name = " Not found";
+            String datumNarozeni = " Not found";
+
+            if(resultSet.next()){
+                name = resultSet.getString("jmeno");
+                datumNarozeni = resultSet.getString("datum_narozeni");
+            }
+
+            displayCustomerDetails(name, datumNarozeni);
+        }
+    }
+
+    /**
+     * Displays the provided customer's name and birthdate on the GUI.
+     * <p>
+     * This method updates the GUI with the provided customer details, setting
+     * them to respective labels. If no customer details are found, the
+     * labels will show a "Not found" message.
+     * </p>
+     *
+     * @param name the name of the customer or "Not found" if not found.
+     * @param birthDate the birthdate of the customer or "Not found" if not found.
+     */
+    private void displayCustomerDetails(String name, String birthDate) {
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        nameLabel = new JLabel("Jméno: " + name);
+        birthDateLabel = new JLabel("Datum narození: " + birthDate);
+
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        add(nameLabel, gbc);
+
+        gbc.gridy = 5;
+        add(birthDateLabel, gbc);
+
+        revalidate();
+        repaint();
+    }
+    
+    /**
+     * Removes the previously displayed customer details from the GUI.
+     * <p>
+     * This method checks if the customer details labels (nameLabel and birthDateLabel)
+     * are currently displayed on the GUI and removes them if they are.
+     * </p>
+     */
+    private void removeOldCustomerDetails() {
+        if (nameLabel != null) {
+            remove(nameLabel);
+        }
+        if (birthDateLabel != null) {
+            remove(birthDateLabel);
+        }
     }
 
     /**
@@ -387,11 +484,7 @@ public class AddDocument extends JPanel {
                 Notification.showErrorMessage("Nenalezeno žádné data pro knihu s ID: " + bookId);
             }
         }
-//        catch (SQLException ex) {
-//            System.out.println("Nastal problém při načítání dat knihy, zkuste to znovu nebo informujte IT oddělení");
-//            Notification.showErrorMessage("Nastal problém při načítání dat knihy, zkuste to znovu nebo informujte IT oddělení");
-//            ex.printStackTrace();
-//        }
+
 
         return bookData;
     }
