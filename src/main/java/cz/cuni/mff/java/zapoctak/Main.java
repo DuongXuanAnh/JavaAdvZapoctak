@@ -25,7 +25,9 @@ public class Main {
      */
     public static void main(String[] args) {
         JFrame frame = new JFrame("Book Manager");
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setResizable(false);
 
         // Create the menu panel with buttons to switch between different panels
         JPanel menuPanel = new JPanel(new GridLayout(1, 0));
@@ -100,6 +102,9 @@ public class Main {
         frame.getContentPane().add(cardPanel, BorderLayout.CENTER);
 
         frame.pack();
+        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice device = env.getDefaultScreenDevice();
+        device.setFullScreenWindow(frame);
         frame.setVisible(true);
         clearFile();
     }
