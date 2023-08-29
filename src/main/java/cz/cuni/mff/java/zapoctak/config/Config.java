@@ -6,16 +6,27 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
+import java.util.Properties;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
  * This class provides configuration settings and methods for database connectivity.
  */
 public class Config {
-    private static final String DATABASE_URL = "jdbc:mysql://localhost:3306/java_winter";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "";
+    private static final String CONFIG_PATH = "config.properties";
+
+    private static Properties properties = new Properties();
     private static final Logger LOGGER = Logger.getLogger(Config.class.getName());
+
+    static {
+        try {
+            properties.load(new FileInputStream(CONFIG_PATH));
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Chyba při čtení konfiguračního souboru.", e);
+        }
+    }
 
     /**
      * Retrieves a database connection using the specified settings.
@@ -24,6 +35,10 @@ public class Config {
      * @throws RuntimeException If a database connection cannot be established.
      */
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DATABASE_URL, USERNAME, PASSWORD);
+        String url = properties.getProperty("DATABASE_URL");
+        String user = properties.getProperty("USERNAME");
+        String password = properties.getProperty("PASSWORD");
+
+        return DriverManager.getConnection(url, user, password);
     }
 }
